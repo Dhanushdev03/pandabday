@@ -2332,12 +2332,15 @@ const memoryPhotos = [
   },
 
   {
+    src: "/media/pics/pic_muthe_classic.jpg",
+    caption: "Muthe Mutharame ✦ Our classic smile.",
+    rot: -3,
+    date: "Memories",
+  },
+  {
     src: "/media/pics/pic_muthe_mutharame.jpg",
-
-    caption: "Muthe Mutharame ✦ My pearl.",
-
+    caption: "Muthe Mutharame ✦ Always you & me.",
     rot: 3,
-
     date: "Forever",
   },
 ]
@@ -5183,10 +5186,10 @@ function FinalSection() {
                 >
                   <div
                     style={{
-                      width: "clamp(210px, 30vw, 280px)",
-                      aspectRatio: "721/1280",
-                      maxHeight: "420px",
-                      borderRadius: "12px",
+                      width: "clamp(280px, 82vw, 480px)",
+                      aspectRatio: "16/9",
+                      maxHeight: "360px",
+                      borderRadius: "14px",
                       overflow: "hidden",
                       background: "#09080e",
                     }}
