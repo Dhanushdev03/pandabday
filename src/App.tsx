@@ -4416,30 +4416,10 @@ function getNextMidnight(): number {
 function FinalSection() {
   const [targetTime] = useState<number>(() => getNextMidnight())
 
-  const [timeLeft, setTimeLeft] = useState(() => {
-    const diff = targetTime - Date.now()
-    return {
-      days: Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24))),
-      hours: Math.max(0, Math.floor((diff / (1000 * 60 * 60)) % 24)),
-      minutes: Math.max(0, Math.floor((diff / (1000 * 60)) % 60)),
-      seconds: Math.max(0, Math.floor((diff / 1000) % 60)),
-      isOver: diff <= 0,
-    }
-  })
+  // Inside the unlocked website, always show the grand birthday celebration
+  const [revealed, setRevealed] = useState<boolean>(true)
 
-  // Strictly display countdown until timer cools down (reaches 12:00 AM)
-  // Optional query param (?preview=true) available for testing
-  const [revealed, setRevealed] = useState<boolean>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const params = new URLSearchParams(window.location.search)
-        if (params.get("preview") === "true") return true
-      } catch {}
-    }
-    return Date.now() >= targetTime
-  })
-
-  // Clear any stale localStorage keys on mount so countdown is never blocked
+  // Clear any stale localStorage keys on mount
   useEffect(() => {
     try {
       localStorage.removeItem("panda_bday_revealed")
@@ -5740,25 +5720,660 @@ function Nav() {
   )
 }
 
+// ─── Countdown Gate (Visible First · Sections Strictly Locked Until 12:00 AM) ───
+function CountdownGate({ onUnlock }: { onUnlock: () => void }) {
+  const targetTime = getNextMidnight()
+
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const diff = targetTime - Date.now()
+    return {
+      days: Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24))),
+      hours: Math.max(0, Math.floor((diff / (1000 * 60 * 60)) % 24)),
+      minutes: Math.max(0, Math.floor((diff / (1000 * 60)) % 60)),
+      seconds: Math.max(0, Math.floor((diff / 1000) % 60)),
+      isOver: diff <= 0,
+    }
+  })
+
+  const [cooledDown, setCooledDown] = useState(() => Date.now() >= targetTime)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const audioRef = useRef<HTMLAudioElement>(null)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const diff = targetTime - Date.now()
+      if (diff <= 0) {
+        setTimeLeft({
+          days: 0,
+          hours: 0,
+          minutes: 0,
+          seconds: 0,
+          isOver: true,
+        })
+        setCooledDown(true)
+      } else {
+        setTimeLeft({
+          days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((diff / (1000 * 60)) % 60),
+          seconds: Math.floor((diff / 1000) % 60),
+          isOver: false,
+        })
+      }
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [targetTime])
+
+  // Autoplay Muthe Mutharame song when midnight arrives
+  useEffect(() => {
+    if (cooledDown && audioRef.current) {
+      audioRef.current.volume = 0.85
+      const playPromise = audioRef.current.play()
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => setIsPlaying(true))
+          .catch((err) => {
+            console.log("Audio autoplay waiting for user interaction:", err)
+          })
+      }
+    }
+  }, [cooledDown])
+
+  const toggleMusic = () => {
+    if (!audioRef.current) return
+    if (isPlaying) {
+      audioRef.current.pause()
+      setIsPlaying(false)
+    } else {
+      audioRef.current.volume = 0.85
+      audioRef.current
+        .play()
+        .then(() => setIsPlaying(true))
+        .catch((e) => console.error(e))
+    }
+  }
+
+  return (
+    <section
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        textAlign: "center",
+        padding: "clamp(40px, 8vw, 80px) clamp(20px, 6vw, 60px)",
+        background: cooledDown
+          ? "radial-gradient(ellipse at 50% 35%, #24180d 0%, #0d0a14 55%, #07060a 100%)"
+          : "radial-gradient(ellipse at 50% 35%, #1b1228 0%, #0b0914 60%, #06050a 100%)",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      <Particles />
+
+      {/* Ambient background glow */}
+      <div
+        style={{
+          position: "absolute",
+          top: "40%",
+          left: "50%",
+          transform: "translate(-50%,-50%)",
+          width: "min(90vw, 750px)",
+          height: "min(90vw, 750px)",
+          borderRadius: "50%",
+          background: cooledDown
+            ? "radial-gradient(circle, rgba(201,168,76,0.25) 0%, transparent 70%)"
+            : "radial-gradient(circle, rgba(147, 107, 214, 0.15) 0%, transparent 70%)",
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* Audio element for Muthe Mutharame */}
+      <audio
+        ref={audioRef}
+        src="/media/audio/song_muthe_mutharame.mp3"
+        preload="auto"
+        loop
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+      />
+
+      {/* Secret dev preview trigger in top right corner */}
+      <div
+        style={{
+          position: "absolute",
+          top: "20px",
+          right: "20px",
+          zIndex: 10,
+        }}
+      >
+        <button
+          onClick={onUnlock}
+          title="Preview unlocked site"
+          style={{
+            background: "rgba(255, 255, 255, 0.04)",
+            border: "1px solid rgba(201, 168, 76, 0.2)",
+            color: "rgba(240, 234, 214, 0.4)",
+            borderRadius: "9999px",
+            padding: "4px 12px",
+            fontSize: "0.7rem",
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = "var(--primary)"
+            e.currentTarget.style.borderColor = "var(--primary)"
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = "rgba(240, 234, 214, 0.4)"
+            e.currentTarget.style.borderColor = "rgba(201, 168, 76, 0.2)"
+          }}
+        >
+          Preview ✦
+        </button>
+      </div>
+
+      <div
+        style={{
+          position: "relative",
+          zIndex: 1,
+          maxWidth: "860px",
+          width: "100%",
+        }}
+      >
+        {!cooledDown ? (
+          /* ─── STATE 1: Locked Countdown Gate (Strictly Before 12:00 AM) ─── */
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              animation: "fadeIn 1s ease",
+            }}
+          >
+            {/* Top Pill Badge */}
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "8px 24px",
+                borderRadius: "9999px",
+                background: "rgba(201, 168, 76, 0.12)",
+                border: "1px solid rgba(201, 168, 76, 0.4)",
+                marginBottom: "24px",
+              }}
+            >
+              <span>⏳</span>
+              <span
+                className="shimmer-text"
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: "clamp(0.85rem, 2.5vw, 1.05rem)",
+                  fontWeight: 600,
+                  letterSpacing: "0.08em",
+                }}
+              >
+                Panda's 20th Birthday · 12:00 AM Midnight Countdown
+              </span>
+              <span>✦</span>
+            </div>
+
+            <h1
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "clamp(2.2rem, 6vw, 4.4rem)",
+                fontWeight: 500,
+                fontStyle: "italic",
+                color: "var(--foreground)",
+                margin: "0 0 16px",
+                lineHeight: 1.15,
+              }}
+            >
+              Counting Down To Your Birthday
+            </h1>
+
+            <p
+              style={{
+                fontFamily: "var(--font-hand)",
+                fontSize: "clamp(1.2rem, 3vw, 1.6rem)",
+                color: "var(--primary)",
+                maxWidth: "640px",
+                margin: "0 auto 36px",
+                lineHeight: 1.45,
+              }}
+            >
+              "The clock is ticking towards 12:00 AM... Hold your breath, Panda.
+              A special journey is about to unlock for you."
+            </p>
+
+            {/* Countdown Grid (Days, Hours, Minutes, Seconds) */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "clamp(8px, 2.5vw, 20px)",
+                marginBottom: "36px",
+                flexWrap: "wrap",
+              }}
+            >
+              {timeLeft.days > 0 && (
+                <>
+                  <div
+                    style={{
+                      background: "rgba(25, 20, 34, 0.9)",
+                      border: "1.5px solid rgba(201, 168, 76, 0.45)",
+                      borderRadius: "18px",
+                      padding: "clamp(16px, 3vw, 28px) clamp(14px, 3vw, 24px)",
+                      minWidth: "clamp(80px, 16vw, 120px)",
+                      boxShadow: "0 10px 30px rgba(0, 0, 0, 0.6)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontFamily: "var(--font-display)",
+                        fontSize: "clamp(2.4rem, 6vw, 4.2rem)",
+                        fontWeight: 600,
+                        color: "var(--primary)",
+                        lineHeight: 1,
+                      }}
+                    >
+                      {String(timeLeft.days).padStart(2, "0")}
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: "var(--font-body)",
+                        fontSize: "0.75rem",
+                        letterSpacing: "0.2em",
+                        textTransform: "uppercase",
+                        color: "var(--muted-foreground)",
+                        marginTop: "8px",
+                      }}
+                    >
+                      Days
+                    </div>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: "2rem",
+                      color: "rgba(201,168,76,0.6)",
+                      fontWeight: 300,
+                    }}
+                  >
+                    :
+                  </span>
+                </>
+              )}
+
+              {/* Hours */}
+              <div
+                style={{
+                  background: "rgba(25, 20, 34, 0.9)",
+                  border: "1.5px solid rgba(201, 168, 76, 0.45)",
+                  borderRadius: "18px",
+                  padding: "clamp(16px, 3vw, 28px) clamp(14px, 3vw, 24px)",
+                  minWidth: "clamp(80px, 16vw, 120px)",
+                  boxShadow: "0 10px 30px rgba(0, 0, 0, 0.6)",
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: "clamp(2.4rem, 6vw, 4.2rem)",
+                    fontWeight: 600,
+                    color: "var(--primary)",
+                    lineHeight: 1,
+                  }}
+                >
+                  {String(timeLeft.hours).padStart(2, "0")}
+                </div>
+                <div
+                  style={{
+                    fontFamily: "var(--font-body)",
+                    fontSize: "0.75rem",
+                    letterSpacing: "0.2em",
+                    textTransform: "uppercase",
+                    color: "var(--muted-foreground)",
+                    marginTop: "8px",
+                  }}
+                >
+                  Hours
+                </div>
+              </div>
+
+              <span
+                style={{
+                  fontSize: "2rem",
+                  color: "rgba(201,168,76,0.6)",
+                  fontWeight: 300,
+                }}
+              >
+                :
+              </span>
+
+              {/* Minutes */}
+              <div
+                style={{
+                  background: "rgba(25, 20, 34, 0.9)",
+                  border: "1.5px solid rgba(201, 168, 76, 0.45)",
+                  borderRadius: "18px",
+                  padding: "clamp(16px, 3vw, 28px) clamp(14px, 3vw, 24px)",
+                  minWidth: "clamp(80px, 16vw, 120px)",
+                  boxShadow: "0 10px 30px rgba(0, 0, 0, 0.6)",
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: "clamp(2.4rem, 6vw, 4.2rem)",
+                    fontWeight: 600,
+                    color: "var(--primary)",
+                    lineHeight: 1,
+                  }}
+                >
+                  {String(timeLeft.minutes).padStart(2, "0")}
+                </div>
+                <div
+                  style={{
+                    fontFamily: "var(--font-body)",
+                    fontSize: "0.75rem",
+                    letterSpacing: "0.2em",
+                    textTransform: "uppercase",
+                    color: "var(--muted-foreground)",
+                    marginTop: "8px",
+                  }}
+                >
+                  Minutes
+                </div>
+              </div>
+
+              <span
+                style={{
+                  fontSize: "2rem",
+                  color: "rgba(201,168,76,0.6)",
+                  fontWeight: 300,
+                }}
+              >
+                :
+              </span>
+
+              {/* Seconds */}
+              <div
+                style={{
+                  background: "rgba(25, 20, 34, 0.9)",
+                  border: "1.5px solid rgba(201, 168, 76, 0.65)",
+                  borderRadius: "18px",
+                  padding: "clamp(16px, 3vw, 28px) clamp(14px, 3vw, 24px)",
+                  minWidth: "clamp(80px, 16vw, 120px)",
+                  boxShadow: "0 0 30px rgba(201, 168, 76, 0.3)",
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: "clamp(2.4rem, 6vw, 4.2rem)",
+                    fontWeight: 600,
+                    color: "#fff3cf",
+                    lineHeight: 1,
+                  }}
+                >
+                  {String(timeLeft.seconds).padStart(2, "0")}
+                </div>
+                <div
+                  style={{
+                    fontFamily: "var(--font-body)",
+                    fontSize: "0.75rem",
+                    letterSpacing: "0.2em",
+                    textTransform: "uppercase",
+                    color: "var(--primary)",
+                    marginTop: "8px",
+                  }}
+                >
+                  Seconds
+                </div>
+              </div>
+            </div>
+
+            {/* Locked Gate Card - Strictly blocks entry into sections */}
+            <div
+              style={{
+                display: "inline-flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "12px",
+                padding: "20px 32px",
+                borderRadius: "20px",
+                background: "rgba(25, 20, 34, 0.8)",
+                border: "1.5px solid rgba(201, 168, 76, 0.35)",
+                maxWidth: "600px",
+                boxShadow: "0 10px 40px rgba(0, 0, 0, 0.5)",
+              }}
+            >
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  color: "var(--primary)",
+                  fontFamily: "var(--font-display)",
+                  fontSize: "1.05rem",
+                  fontWeight: 600,
+                  letterSpacing: "0.04em",
+                }}
+              >
+                <span style={{ fontSize: "1.3rem" }}>🔒</span>
+                <span>Story Chapters & Surprises Locked Until 12:00 AM</span>
+                <span>✨</span>
+              </div>
+              <p
+                style={{
+                  fontFamily: "var(--font-body)",
+                  fontSize: "0.85rem",
+                  color: "rgba(240, 234, 214, 0.7)",
+                  margin: 0,
+                  lineHeight: 1.5,
+                }}
+              >
+                Patience, Panda 🐼 All your gifts, our story timeline, secret
+                photos & birthday surprises are safely protected behind this
+                door. The gates will open automatically when the clock strikes
+                12:00 AM.
+              </p>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  marginTop: "4px",
+                  fontSize: "0.75rem",
+                  color: "var(--muted-foreground)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                }}
+              >
+                <span style={{ color: "#22c55e" }}>●</span>
+                <span>
+                  Live Synchronized Timer · Unlocks at 12:00 AM Midnight
+                </span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* ─── STATE 2: Midnight Arrived! Reveal & Enter ─── */
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              animation: "golden-reveal 1.5s ease forwards",
+            }}
+          >
+            {/* Top Badge */}
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "8px 24px",
+                borderRadius: "9999px",
+                background: "rgba(201, 168, 76, 0.2)",
+                border: "1px solid rgba(201, 168, 76, 0.6)",
+                marginBottom: "20px",
+              }}
+            >
+              <span>🎉</span>
+              <span
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: "0.95rem",
+                  color: "var(--primary)",
+                  fontWeight: 600,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                }}
+              >
+                The Clock Struck 12:00 AM · The Wait Is Over!
+              </span>
+              <span>👑</span>
+            </div>
+
+            <h1
+              className="shimmer-text"
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "clamp(2.8rem, 8vw, 5.2rem)",
+                fontWeight: 600,
+                lineHeight: 1.1,
+                margin: "0 0 10px",
+              }}
+            >
+              Happie Bday panda 🐼✨
+            </h1>
+
+            <h2
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "clamp(1.8rem, 5vw, 3.2rem)",
+                fontStyle: "italic",
+                color: "var(--primary)",
+                fontWeight: 500,
+                margin: "0 0 20px",
+                textShadow: "0 0 35px rgba(201, 168, 76, 0.6)",
+              }}
+            >
+              🥂 Cheers to Twenty! 👑
+            </h2>
+
+            <p
+              style={{
+                fontFamily: "var(--font-hand)",
+                fontSize: "clamp(1.3rem, 3vw, 1.7rem)",
+                color: "var(--foreground)",
+                maxWidth: "680px",
+                margin: "0 auto 32px",
+                lineHeight: 1.5,
+              }}
+            >
+              "20 years of sunshine, laughter, fights, inside jokes, and being
+              the most special person in my life. Welcome to your birthday
+              celebration, Panda."
+            </p>
+
+            {/* Music Control Chip */}
+            <div
+              onClick={toggleMusic}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "8px 20px",
+                borderRadius: "9999px",
+                background: "rgba(201, 168, 76, 0.15)",
+                border: "1px solid rgba(201, 168, 76, 0.4)",
+                color: "var(--primary)",
+                fontSize: "0.85rem",
+                cursor: "pointer",
+                marginBottom: "36px",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <span>{isPlaying ? "⏸" : "▶"}</span>
+              <span style={{ fontFamily: "var(--font-body)" }}>
+                {isPlaying
+                  ? "Playing: Muthe Mutharame 🎵"
+                  : "Play: Muthe Mutharame 🎵"}
+              </span>
+            </div>
+
+            {/* Enter Birthday Wonderland Button */}
+            <button
+              onClick={onUnlock}
+              className="btn-cinematic animate-glow-pulse"
+              style={{
+                fontSize: "clamp(1.05rem, 2.5vw, 1.25rem)",
+                padding: "20px 48px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "12px",
+                cursor: "pointer",
+              }}
+            >
+              <span>✨</span>
+              <span>Enter Birthday Wonderland & Walk Our Story</span>
+              <span>→</span>
+            </button>
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 export default function App() {
-  const [, setStarted] = useState(false)
+  const targetTime = getNextMidnight()
 
+  const [isUnlocked, setIsUnlocked] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const params = new URLSearchParams(window.location.search)
+        if (
+          params.get("preview") === "true" ||
+          params.get("unlock") === "true"
+        ) {
+          return true
+        }
+      } catch {}
+    }
+    return Date.now() >= targetTime
+  })
+
+  const [, setStarted] = useState(false)
   const mainRef = useRef<HTMLDivElement>(null)
 
   const handleStart = useCallback(() => {
     setStarted(true)
-
     setTimeout(() => {
       document
-
         .getElementById("beginning")
-
         ?.scrollIntoView({ behavior: "smooth" })
     }, 100)
   }, [])
 
+  // If before 12:00 AM, show ONLY the Countdown Gate!
+  // Visitors strictly CANNOT enter the sections until 12:00 AM!
+  if (!isUnlocked) {
+    return (
+      <div className="grain">
+        <CountdownGate onUnlock={() => setIsUnlocked(true)} />
+      </div>
+    )
+  }
+
+  // Once 12:00 AM strikes (or unlocked): Render the full website!
   return (
     <div className="grain" ref={mainRef}>
       <Nav />
