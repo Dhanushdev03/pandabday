@@ -1,28 +1,39 @@
 import { useState, useEffect, useRef, useCallback } from "react"
+
 import MonthlyVaultSection from "./components/MonthlyVaultSection"
 
 // ─── Scroll reveal hook ──────────────────────────────────────────────────────
+
 function useReveal() {
   const ref = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     const el = ref.current
+
     if (!el) return
+
     const obs = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           el.classList.add("visible")
+
           obs.disconnect()
         }
       },
+
       { threshold: 0.12 },
     )
+
     obs.observe(el)
+
     return () => obs.disconnect()
   }, [])
+
   return ref
 }
 
 // ─── Particles ───────────────────────────────────────────────────────────────
+
 function Particles() {
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
@@ -31,13 +42,20 @@ function Particles() {
           key={i}
           style={{
             position: "absolute",
+
             left: `${Math.random() * 100}%`,
+
             bottom: `${Math.random() * 30}%`,
+
             width: i % 5 === 0 ? "3px" : "1.5px",
+
             height: i % 5 === 0 ? "3px" : "1.5px",
+
             borderRadius: "50%",
+
             background:
               i % 3 === 0 ? "rgba(201,168,76,0.6)" : "rgba(255,255,255,0.4)",
+
             animation: `float-up ${8 + Math.random() * 12}s linear ${Math.random() * 10}s infinite`,
           }}
         />
@@ -47,12 +65,19 @@ function Particles() {
           key={`star-${i}`}
           style={{
             position: "absolute",
+
             left: `${Math.random() * 100}%`,
+
             top: `${Math.random() * 60}%`,
+
             width: Math.random() > 0.7 ? "2px" : "1px",
+
             height: Math.random() > 0.7 ? "2px" : "1px",
+
             borderRadius: "50%",
+
             background: "rgba(255,255,255,0.6)",
+
             animation: `twinkle ${2 + Math.random() * 4}s ease-in-out ${Math.random() * 4}s infinite`,
           }}
         />
@@ -62,35 +87,51 @@ function Particles() {
 }
 
 // ─── Polaroid frame ───────────────────────────────────────────────────────────
+
 function Polaroid({
   src,
+
   caption,
+
   rotation = 0,
+
   delay = 0,
+
   onClick,
 }: {
   src: string
+
   caption: string
+
   rotation?: number
+
   delay?: number
+
   onClick?: () => void
 }) {
   const ref = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     const el = ref.current
+
     if (!el) return
+
     const obs = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setTimeout(() => {
             el.style.animation = `polaroid-drop 0.7s cubic-bezier(0.34,1.56,0.64,1) forwards`
           }, delay)
+
           obs.disconnect()
         }
       },
+
       { threshold: 0.1 },
     )
+
     obs.observe(el)
+
     return () => obs.disconnect()
   }, [delay])
 
@@ -101,7 +142,9 @@ function Polaroid({
       style={
         {
           "--rot": `${rotation}deg`,
+
           transform: `rotate(${rotation}deg)`,
+
           opacity: 0,
         } as React.CSSProperties
       }
@@ -111,7 +154,9 @@ function Polaroid({
         <div
           style={{
             aspectRatio: "1/1",
+
             overflow: "hidden",
+
             background: "#1a1825",
           }}
         >
@@ -120,8 +165,11 @@ function Polaroid({
             alt={caption}
             style={{
               width: "100%",
+
               height: "100%",
+
               objectFit: "cover",
+
               display: "block",
             }}
           />
@@ -129,10 +177,15 @@ function Polaroid({
         <p
           style={{
             fontFamily: "var(--font-hand)",
+
             fontSize: "clamp(0.9rem, 2vw, 1.1rem)",
+
             color: "#3a2a10",
+
             marginTop: "10px",
+
             textAlign: "center",
+
             lineHeight: 1.3,
           }}
         >
@@ -144,22 +197,30 @@ function Polaroid({
 }
 
 // ─── Lightbox ─────────────────────────────────────────────────────────────────
+
 function Lightbox({
   src,
+
   caption,
+
   onClose,
 }: {
   src: string
+
   caption: string
+
   onClose: () => void
 }) {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose()
     }
+
     window.addEventListener("keydown", handler)
+
     return () => window.removeEventListener("keydown", handler)
   }, [onClose])
+
   return (
     <div className="lightbox-overlay" onClick={onClose}>
       <div
@@ -171,17 +232,24 @@ function Lightbox({
           alt={caption}
           style={{
             maxWidth: "100%",
+
             maxHeight: "70vh",
+
             objectFit: "contain",
+
             boxShadow: "0 20px 80px rgba(0,0,0,0.9)",
           }}
         />
         <p
           style={{
             fontFamily: "var(--font-hand)",
+
             fontSize: "1.4rem",
+
             color: "var(--foreground)",
+
             marginTop: "20px",
+
             opacity: 0.8,
           }}
         >
@@ -191,12 +259,19 @@ function Lightbox({
           onClick={onClose}
           style={{
             marginTop: "16px",
+
             color: "rgba(255,255,255,0.4)",
+
             fontSize: "0.8rem",
+
             letterSpacing: "0.1em",
+
             background: "none",
+
             border: "none",
+
             cursor: "pointer",
+
             textTransform: "uppercase",
           }}
         >
@@ -208,15 +283,21 @@ function Lightbox({
 }
 
 // ─── Section 01 — Landing ─────────────────────────────────────────────────────
+
 function HeroSection({ onStart }: { onStart: () => void }) {
   const [step, setStep] = useState(0)
+
   useEffect(() => {
     const timers = [
       setTimeout(() => setStep(1), 800),
+
       setTimeout(() => setStep(2), 2800),
+
       setTimeout(() => setStep(3), 4600),
+
       setTimeout(() => setStep(4), 6400),
     ]
+
     return () => timers.forEach(clearTimeout)
   }, [])
 
@@ -225,13 +306,21 @@ function HeroSection({ onStart }: { onStart: () => void }) {
       id="hero"
       style={{
         minHeight: "100vh",
+
         display: "flex",
+
         flexDirection: "column",
+
         alignItems: "center",
+
         justifyContent: "center",
+
         textAlign: "center",
+
         padding: "40px 24px",
+
         position: "relative",
+
         background:
           "radial-gradient(ellipse at 50% 40%, #1a1220 0%, #09080e 60%)",
       }}
@@ -241,11 +330,17 @@ function HeroSection({ onStart }: { onStart: () => void }) {
         <div
           style={{
             marginBottom: "48px",
+
             minHeight: "200px",
+
             display: "flex",
+
             flexDirection: "column",
+
             alignItems: "center",
+
             justifyContent: "center",
+
             gap: "28px",
           }}
         >
@@ -253,11 +348,17 @@ function HeroSection({ onStart }: { onStart: () => void }) {
             <p
               style={{
                 fontFamily: "var(--font-display)",
+
                 fontSize: "clamp(1.1rem, 3vw, 1.5rem)",
+
                 fontStyle: "italic",
+
                 fontWeight: 300,
+
                 color: "rgba(240,234,214,0.7)",
+
                 letterSpacing: "0.04em",
+
                 animation: "fadeInUp 1s ease forwards",
               }}
             >
@@ -268,11 +369,17 @@ function HeroSection({ onStart }: { onStart: () => void }) {
             <h1
               style={{
                 fontFamily: "var(--font-display)",
+
                 fontSize: "clamp(1.6rem, 5vw, 3rem)",
+
                 fontWeight: 600,
+
                 color: "var(--foreground)",
+
                 lineHeight: 1.2,
+
                 animation: "fadeInUp 1s ease forwards",
+
                 margin: 0,
               }}
             >
@@ -284,10 +391,15 @@ function HeroSection({ onStart }: { onStart: () => void }) {
             <p
               style={{
                 fontFamily: "var(--font-display)",
+
                 fontSize: "clamp(1rem, 2.5vw, 1.3rem)",
+
                 fontStyle: "italic",
+
                 fontWeight: 300,
+
                 color: "rgba(240,234,214,0.6)",
+
                 animation: "fadeInUp 1s ease forwards",
               }}
             >
@@ -300,9 +412,13 @@ function HeroSection({ onStart }: { onStart: () => void }) {
           <div
             style={{
               animation: "fadeInUp 1.2s ease forwards",
+
               display: "flex",
+
               flexDirection: "column",
+
               alignItems: "center",
+
               gap: "20px",
             }}
           >
@@ -315,8 +431,11 @@ function HeroSection({ onStart }: { onStart: () => void }) {
             <p
               style={{
                 fontFamily: "var(--font-hand)",
+
                 fontSize: "1.1rem",
+
                 color: "var(--muted-foreground)",
+
                 letterSpacing: "0.02em",
               }}
             >
@@ -330,32 +449,47 @@ function HeroSection({ onStart }: { onStart: () => void }) {
       <div
         style={{
           position: "absolute",
+
           top: "30%",
+
           left: "50%",
+
           transform: "translate(-50%,-50%)",
+
           width: "600px",
+
           height: "600px",
+
           borderRadius: "50%",
+
           background:
             "radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 70%)",
+
           pointerEvents: "none",
         }}
       />
       <div
         style={{
           position: "absolute",
+
           bottom: "40px",
+
           left: "50%",
+
           transform: "translateX(-50%)",
+
           animation: "fadeIn 2s ease 7s both",
         }}
       >
         <div
           style={{
             width: "1px",
+
             height: "60px",
+
             background:
               "linear-gradient(to bottom, rgba(201,168,76,0.6), transparent)",
+
             margin: "0 auto",
           }}
         />
@@ -365,19 +499,25 @@ function HeroSection({ onStart }: { onStart: () => void }) {
 }
 
 // ─── Section 02 — The Beginning ───────────────────────────────────────────────
+
 function BeginningSection() {
   const ref = useReveal()
+
   const [lightbox, setLightbox] = useState<{
     src: string
+
     caption: string
   } | null>(null)
+
   return (
     <section
       ref={ref}
       className="reveal"
       style={{
         padding: "clamp(80px,12vw,140px) clamp(20px,8vw,120px)",
+
         position: "relative",
+
         background: "linear-gradient(180deg, #09080e 0%, #0d0b16 100%)",
       }}
     >
@@ -386,8 +526,11 @@ function BeginningSection() {
         <div
           style={{
             display: "flex",
+
             flexDirection: "column",
+
             gap: "12px",
+
             marginBottom: "60px",
           }}
         >
@@ -399,9 +542,13 @@ function BeginningSection() {
             <span
               style={{
                 fontFamily: "var(--font-body)",
+
                 fontSize: "0.75rem",
+
                 letterSpacing: "0.2em",
+
                 textTransform: "uppercase",
+
                 color: "var(--muted-foreground)",
               }}
             >
@@ -414,11 +561,17 @@ function BeginningSection() {
           <h2
             style={{
               fontFamily: "var(--font-display)",
+
               fontSize: "clamp(2rem, 6vw, 4.5rem)",
+
               fontWeight: 400,
+
               fontStyle: "italic",
+
               color: "var(--foreground)",
+
               margin: 0,
+
               lineHeight: 1.1,
             }}
           >
@@ -429,8 +582,11 @@ function BeginningSection() {
         <div
           style={{
             display: "grid",
+
             gridTemplateColumns: "1fr 1fr",
+
             gap: "clamp(30px, 6vw, 80px)",
+
             alignItems: "center",
           }}
           className="grid-responsive"
@@ -439,10 +595,15 @@ function BeginningSection() {
             <p
               style={{
                 fontFamily: "var(--font-display)",
+
                 fontSize: "clamp(1.1rem, 2.5vw, 1.4rem)",
+
                 fontWeight: 300,
+
                 lineHeight: 1.8,
+
                 color: "rgba(240,234,214,0.8)",
+
                 fontStyle: "italic",
               }}
             >
@@ -455,7 +616,9 @@ function BeginningSection() {
               <strong
                 style={{
                   color: "var(--primary)",
+
                   fontStyle: "normal",
+
                   fontWeight: 500,
                 }}
               >
@@ -482,11 +645,17 @@ function BeginningSection() {
           <div
             style={{
               display: "flex",
+
               flexDirection: "row",
+
               flexWrap: "wrap",
+
               justifyContent: "center",
+
               alignItems: "center",
+
               gap: "24px",
+
               position: "relative",
             }}
           >
@@ -498,6 +667,7 @@ function BeginningSection() {
               onClick={() =>
                 setLightbox({
                   src: "/media/pics/pic_first_kfc_sep23.jpg",
+
                   caption:
                     "Our first picture · September 23, 2025, KFC — where it all started.",
                 })
@@ -511,6 +681,7 @@ function BeginningSection() {
               onClick={() =>
                 setLightbox({
                   src: "/media/pics/pic_early_fun_college.jpg",
+
                   caption:
                     "The early days · Teasing and making fun of each other right from the start.",
                 })
@@ -519,11 +690,17 @@ function BeginningSection() {
             <div
               style={{
                 position: "absolute",
+
                 top: "-15px",
+
                 right: "-10px",
+
                 fontFamily: "var(--font-hand)",
+
                 fontSize: "1rem",
+
                 color: "var(--muted-foreground)",
+
                 transform: "rotate(6deg)",
               }}
             >
@@ -532,11 +709,17 @@ function BeginningSection() {
             <div
               style={{
                 position: "absolute",
+
                 bottom: "-24px",
+
                 left: "10px",
+
                 fontFamily: "var(--font-hand)",
+
                 fontSize: "1.05rem",
+
                 color: "var(--primary)",
+
                 transform: "rotate(-4deg)",
               }}
             >
@@ -549,14 +732,18 @@ function BeginningSection() {
         <div
           style={{
             display: "flex",
+
             justifyContent: "center",
+
             marginTop: "80px",
           }}
         >
           <div
             style={{
               width: "1px",
+
               height: "80px",
+
               background:
                 "linear-gradient(to bottom, rgba(201,168,76,0.5), transparent)",
             }}
@@ -570,28 +757,41 @@ function BeginningSection() {
 }
 
 // ─── Timeline Chapter Card ────────────────────────────────────────────────────
+
 interface Chapter {
   num: string
+
   date: string
+
   location: string
+
   title: string
+
   description: string
+
   handwritten: string
+
   img: string
+
   imgs?: string[]
+
   detail?: string
 }
 
 function ChapterCard({
   chapter,
+
   isLeft,
 }: {
   chapter: Chapter
+
   isLeft: boolean
 }) {
   const ref = useReveal()
+
   const [lightbox, setLightbox] = useState<{
     src: string
+
     caption: string
   } | null>(null)
 
@@ -603,9 +803,13 @@ function ChapterCard({
       className={`reveal ${isLeft ? "reveal-delay-1" : "reveal-delay-2"}`}
       style={{
         position: "relative",
+
         display: "grid",
+
         gridTemplateColumns: isMobile ? "1fr" : "1fr 60px 1fr",
+
         alignItems: "start",
+
         gap: "0",
       }}
     >
@@ -615,7 +819,9 @@ function ChapterCard({
       <div
         style={{
           paddingRight: "40px",
+
           paddingBottom: "60px",
+
           ...(isLeft ? {} : { opacity: 0 }),
         }}
       >
@@ -623,19 +829,28 @@ function ChapterCard({
           <div
             style={{
               background: "var(--card)",
+
               border: "1px solid var(--border)",
+
               padding: "clamp(20px,4vw,36px)",
+
               position: "relative",
             }}
           >
             <span
               style={{
                 fontFamily: "var(--font-display)",
+
                 fontSize: "3.5rem",
+
                 fontWeight: 300,
+
                 color: "transparent",
+
                 WebkitTextStroke: "1px rgba(201,168,76,0.4)",
+
                 lineHeight: 1,
+
                 display: "block",
               }}
             >
@@ -644,17 +859,24 @@ function ChapterCard({
             <div
               style={{
                 display: "flex",
+
                 gap: "16px",
+
                 margin: "8px 0 16px",
+
                 flexWrap: "wrap",
               }}
             >
               <span
                 style={{
                   fontFamily: "var(--font-body)",
+
                   fontSize: "0.7rem",
+
                   letterSpacing: "0.18em",
+
                   textTransform: "uppercase",
+
                   color: "var(--muted-foreground)",
                 }}
               >
@@ -664,9 +886,13 @@ function ChapterCard({
               <span
                 style={{
                   fontFamily: "var(--font-body)",
+
                   fontSize: "0.7rem",
+
                   letterSpacing: "0.18em",
+
                   textTransform: "uppercase",
+
                   color: "var(--primary)",
                 }}
               >
@@ -676,10 +902,15 @@ function ChapterCard({
             <h3
               style={{
                 fontFamily: "var(--font-display)",
+
                 fontSize: "clamp(1.3rem, 3vw, 2rem)",
+
                 fontWeight: 400,
+
                 fontStyle: "italic",
+
                 color: "var(--foreground)",
+
                 margin: "0 0 16px",
               }}
             >
@@ -688,9 +919,13 @@ function ChapterCard({
             <p
               style={{
                 fontFamily: "var(--font-body)",
+
                 fontSize: "0.9rem",
+
                 lineHeight: 1.75,
+
                 color: "var(--secondary-foreground)",
+
                 margin: "0 0 20px",
               }}
             >
@@ -699,8 +934,11 @@ function ChapterCard({
             <p
               style={{
                 fontFamily: "var(--font-hand)",
+
                 fontSize: "1.1rem",
+
                 color: "var(--primary)",
+
                 margin: 0,
               }}
             >
@@ -710,9 +948,13 @@ function ChapterCard({
               <p
                 style={{
                   fontFamily: "var(--font-body)",
+
                   fontSize: "0.72rem",
+
                   letterSpacing: "0.1em",
+
                   color: "rgba(140,126,96,0.6)",
+
                   marginTop: "16px",
                 }}
               >
@@ -727,8 +969,11 @@ function ChapterCard({
       <div
         style={{
           display: "flex",
+
           flexDirection: "column",
+
           alignItems: "center",
+
           paddingTop: "20px",
         }}
       >
@@ -736,9 +981,12 @@ function ChapterCard({
         <div
           style={{
             flex: 1,
+
             width: "1px",
+
             background:
               "linear-gradient(to bottom, rgba(201,168,76,0.4), rgba(201,168,76,0.1))",
+
             minHeight: "200px",
           }}
         />
@@ -748,7 +996,9 @@ function ChapterCard({
       <div
         style={{
           paddingLeft: "40px",
+
           paddingBottom: "60px",
+
           ...(!isLeft ? {} : { opacity: 0 }),
         }}
       >
@@ -756,19 +1006,28 @@ function ChapterCard({
           <div
             style={{
               background: "var(--card)",
+
               border: "1px solid var(--border)",
+
               padding: "clamp(20px,4vw,36px)",
+
               position: "relative",
             }}
           >
             <span
               style={{
                 fontFamily: "var(--font-display)",
+
                 fontSize: "3.5rem",
+
                 fontWeight: 300,
+
                 color: "transparent",
+
                 WebkitTextStroke: "1px rgba(201,168,76,0.4)",
+
                 lineHeight: 1,
+
                 display: "block",
               }}
             >
@@ -777,17 +1036,24 @@ function ChapterCard({
             <div
               style={{
                 display: "flex",
+
                 gap: "16px",
+
                 margin: "8px 0 16px",
+
                 flexWrap: "wrap",
               }}
             >
               <span
                 style={{
                   fontFamily: "var(--font-body)",
+
                   fontSize: "0.7rem",
+
                   letterSpacing: "0.18em",
+
                   textTransform: "uppercase",
+
                   color: "var(--muted-foreground)",
                 }}
               >
@@ -797,9 +1063,13 @@ function ChapterCard({
               <span
                 style={{
                   fontFamily: "var(--font-body)",
+
                   fontSize: "0.7rem",
+
                   letterSpacing: "0.18em",
+
                   textTransform: "uppercase",
+
                   color: "var(--primary)",
                 }}
               >
@@ -809,10 +1079,15 @@ function ChapterCard({
             <h3
               style={{
                 fontFamily: "var(--font-display)",
+
                 fontSize: "clamp(1.3rem, 3vw, 2rem)",
+
                 fontWeight: 400,
+
                 fontStyle: "italic",
+
                 color: "var(--foreground)",
+
                 margin: "0 0 16px",
               }}
             >
@@ -821,9 +1096,13 @@ function ChapterCard({
             <p
               style={{
                 fontFamily: "var(--font-body)",
+
                 fontSize: "0.9rem",
+
                 lineHeight: 1.75,
+
                 color: "var(--secondary-foreground)",
+
                 margin: "0 0 20px",
               }}
             >
@@ -832,8 +1111,11 @@ function ChapterCard({
             <p
               style={{
                 fontFamily: "var(--font-hand)",
+
                 fontSize: "1.1rem",
+
                 color: "var(--primary)",
+
                 margin: 0,
               }}
             >
@@ -843,9 +1125,13 @@ function ChapterCard({
               <p
                 style={{
                   fontFamily: "var(--font-body)",
+
                   fontSize: "0.72rem",
+
                   letterSpacing: "0.1em",
+
                   color: "rgba(140,126,96,0.6)",
+
                   marginTop: "16px",
                 }}
               >
@@ -860,11 +1146,17 @@ function ChapterCard({
       <div
         style={{
           gridColumn: isLeft ? "3" : "1",
+
           gridRow: "1",
+
           padding: isLeft ? "0 0 0 40px" : "0 40px 0 0",
+
           display: "flex",
+
           justifyContent: "center",
+
           alignItems: "flex-start",
+
           paddingTop: "20px",
         }}
       >
@@ -872,11 +1164,13 @@ function ChapterCard({
           className="polaroid-card"
           style={{
             transform: `rotate(${isLeft ? 2 : -2}deg)`,
+
             cursor: "pointer",
           }}
           onClick={() =>
             setLightbox({
               src: chapter.img.replace("w=400&h=400", "w=900&h=900"),
+
               caption: chapter.title,
             })
           }
@@ -888,7 +1182,9 @@ function ChapterCard({
             <div
               style={{
                 aspectRatio: "1/1",
+
                 overflow: "hidden",
+
                 background: "#1a1825",
               }}
             >
@@ -901,9 +1197,13 @@ function ChapterCard({
             <p
               style={{
                 fontFamily: "var(--font-hand)",
+
                 fontSize: "0.95rem",
+
                 color: "#3a2a10",
+
                 marginTop: "8px",
+
                 textAlign: "center",
               }}
             >
@@ -917,116 +1217,191 @@ function ChapterCard({
 }
 
 // ─── Section 03 — Timeline ────────────────────────────────────────────────────
+
 const chapters: Chapter[] = [
   {
     num: "02",
+
     date: "September 2025",
+
     location: "SIMATS Campus",
+
     title: "Where We Started Making Fun",
+
     description:
       "Right after that KFC day, the silence broke completely. We went straight into non-stop banter, pulling each other's leg, and sharing the kind of effortless laughter that made everyone wonder how long we had known each other.",
+
     handwritten: "From complete strangers to non-stop laughter and teasing.",
+
     img: "/media/pics/pic_early_fun_college.jpg",
+
     detail: "Where the teasing began",
   },
+
   {
     num: "03",
+
     date: "October 2025",
+
     location: "College Grounds",
+
     title: "Pure Chaos & Fence Laughs",
+
     description:
       "When ordinary college fences turn into comedy stages and everyday walks turn into uncontrollable fits of laughter. That was the moment we realized this friendship had absolutely zero filter.",
+
     handwritten: "No pretenses, no filters — just pure joy.",
+
     img: "/media/pics/pic_new_02_fence_laugh.jpg",
+
     detail: "Unfiltered Shenanigans",
   },
+
   {
     num: "04",
+
     date: "December 2025",
+
     location: "College Bus & Lake",
+
     title: "Bus Commutes & Lake Embankments",
+
     description:
       "Daily bus rides where we teased each other endlessly until our stomachs hurt, followed by quiet evenings sitting on the lake embankment with the squad, sharing dreams and stories.",
+
     handwritten: "Bus seat teasing and lake breeze talks.",
+
     img: "/media/pics/pic_new_05_bus_moments.jpg",
+
     detail: "Squad & Commute Banter",
   },
+
   {
     num: "05",
+
     date: "January 2026",
+
     location: "Midnight Highway",
+
     title: "Bridge Drives & Streetlight Escapes",
+
     description:
       "Night road trips across the bridge under glowing yellow streetlights, wet roads after the rain, and long conversations about life where time simply slipped away.",
+
     handwritten: "Cool wind, empty roads, and the best company.",
+
     img: "/media/pics/pic_new_01_highway_bridge.jpg",
+
     detail: "Night Bridge Drives",
   },
+
   {
     num: "06",
+
     date: "March 2026",
+
     location: "Rooftop Balcony",
+
     title: "Golden Hour Breeze & Matching Vibes",
+
     description:
       "Standing by the railing in matching tones, watching the sky change colors, and laughing at the most random things. Proof that with you, even quiet afternoons become golden.",
+
     handwritten: "When silence feels just as comfortable as laughter.",
+
     img: "/media/pics/pic_new_08_rooftop_breeze.jpg",
+
     detail: "Golden Hour Moments",
   },
+
   {
     num: "07",
+
     date: "June 2026",
+
     location: "Mahabalipuram",
+
     title: "Coastal Adventures & Cliff Heights",
+
     description:
       "Standing high on the Mahabalipuram rocks overlooking the lush trees and ocean horizon together. Wind blowing through our hair, shore waves below, and another chapter carved into our hearts.",
+
     handwritten: "Standing above the trees, looking out at the sea.",
+
     img: "/media/pics/pic_new_09_mahabalipuram_view.jpg",
+
     detail: "Mahabalipuram Heights",
   },
+
   {
     num: "08",
+
     date: "August 2026",
+
     location: "Everywhere",
+
     title: "Pop Comic Energy & Good Vibes",
+
     description:
       "Every single day with you feels like a lively comic strip filled with color, goofy smiles, inside jokes, and good energy that brightens up even the most exhausting days.",
+
     handwritten: "Living in our own vibrant comic strip.",
+
     img: "/media/pics/pic_new_11_pop_comic_duo.jpg",
+
     detail: "Endless Good Energy",
   },
+
   {
     num: "09",
+
     date: "September 2026",
+
     location: "Midnight 12:00",
+
     title: "Midnight Birthday Smiles",
+
     description:
       "The clock strikes 12:00. Dim lights, birthday cake, heartfelt wishes, and seeing you smile. Another year older, countless memories behind us, and a bond that only grows stronger.",
+
     handwritten: "Happy Birthday to my favorite person.",
+
     img: "/media/pics/pic_6138822513551677908.jpg",
+
     detail: "September Birthday Celebration",
   },
+
   {
     num: "10",
+
     date: "Today & Always",
+
     location: "In My Heart",
+
     title: "Muthe Mutharame · Still Us",
+
     description:
       "And here we are today. From complete strangers at KFC on September 23, 2025 to this very moment — you will forever be my precious pearl, my greatest comfort, and my favorite chapter.",
+
     handwritten: "Muthe Mutharame — today, tomorrow, forever ✦",
+
     img: "/media/pics/pic_muthe_mutharame.jpg",
+
     detail: "Muthe Mutharame ✦",
   },
 ]
 
 function TimelineSection() {
   const headerRef = useReveal()
+
   return (
     <section
       id="timeline"
       style={{
         padding: "clamp(60px,10vw,120px) clamp(20px,8vw,100px)",
+
         position: "relative",
+
         background: "#09080e",
       }}
     >
@@ -1039,10 +1414,15 @@ function TimelineSection() {
           <p
             style={{
               fontFamily: "var(--font-body)",
+
               fontSize: "0.75rem",
+
               letterSpacing: "0.25em",
+
               textTransform: "uppercase",
+
               color: "var(--muted-foreground)",
+
               marginBottom: "16px",
             }}
           >
@@ -1051,10 +1431,15 @@ function TimelineSection() {
           <h2
             style={{
               fontFamily: "var(--font-display)",
+
               fontSize: "clamp(2.5rem, 7vw, 5rem)",
+
               fontWeight: 400,
+
               fontStyle: "italic",
+
               color: "var(--foreground)",
+
               margin: 0,
             }}
           >
@@ -1073,99 +1458,164 @@ function TimelineSection() {
 }
 
 // ─── Section 05 — Places ─────────────────────────────────────────────────────
+
 const places = [
   {
     name: "KFC · The Beginning",
+
     shortName: "KFC",
+
     icon: "🍗",
+
     x: 63,
+
     y: 54,
+
     date: "Sep 23, 2025",
+
     memory:
       "Our very first photo, our first meal together, and where two complete strangers became best friends.",
+
     img: "/media/pics/pic_first_kfc_sep23.jpg",
   },
+
   {
     name: "SIMATS Campus",
+
     shortName: "SIMATS",
+
     icon: "🎓",
+
     x: 52,
+
     y: 56,
+
     date: "The Early Days",
+
     memory:
       "Campus walkways, breeze through the trees, teasing, and making fun of each other from that much early on.",
+
     img: "/media/pics/pic_early_fun_college.jpg",
   },
+
   {
     name: "VR Mall",
+
     shortName: "VR Mall",
+
     icon: "🛍️",
+
     x: 60,
+
     y: 48,
+
     date: "City Hangouts",
+
     memory:
       "Anna Nagar vibes, walking around every floor, grabbing food, and non-stop inside jokes.",
+
     img: "/media/pics/pic_6138822513551677800.jpg",
   },
+
   {
     name: "Phoenix Marketcity",
+
     shortName: "Phoenix Mall",
+
     icon: "✨",
+
     x: 64,
+
     y: 58,
+
     date: "Mall Adventures",
+
     memory:
       "Endless strolls through Phoenix, laughing at random things, and conversations we never wanted to end.",
+
     img: "/media/pics/pic_6138822513551677803.jpg",
   },
+
   {
     name: "Mahabalipuram",
+
     shortName: "Mahabalipuram",
+
     icon: "🌊",
+
     x: 68,
+
     y: 65,
+
     date: "Coastal Road Trip",
+
     memory:
       "Standing on the cliff rocks overlooking the coastal greenery and open sea together. Ocean breeze, ancient stone carvings, and timeless memories.",
+
     img: "/media/pics/pic_new_09_mahabalipuram_view.jpg",
   },
+
   {
     name: "Palakkad",
+
     shortName: "Palakkad",
+
     icon: "🌴",
+
     x: 35,
+
     y: 78,
+
     date: "Kerala Escapes",
+
     memory:
       "Scenic Western Ghats roads, lush green hills, fresh mountain air, and unforgettable road trip vibes.",
+
     img: "/media/pics/pic_6138822513551677802.jpg",
   },
+
   {
     name: "Waterfalls & Nature",
+
     shortName: "Waterfalls",
+
     icon: "💧",
+
     x: 40,
+
     y: 86,
+
     date: "Chasing Waterfalls",
+
     memory:
       "Cold rushing water, slippery rocks, shivering, getting completely soaked, and laughing with pure joy.",
+
     img: "/media/pics/pic_6138822513551677804.jpg",
   },
+
   {
     name: "Midnight Birthday",
+
     shortName: "Midnight 12:00",
+
     icon: "🎂",
+
     x: 58,
+
     y: 72,
+
     date: "12:00 AM Celebration",
+
     memory:
       "The birthday celebration, surprise moment, candles, smiles, and another year together in our story.",
+
     img: "/media/pics/pic_6138822513551677908.jpg",
   },
 ]
 
 function PlacesSection() {
   const ref = useReveal()
+
   const [active, setActive] = useState<typeof places[0] | null>(null)
 
   return (
@@ -1173,6 +1623,7 @@ function PlacesSection() {
       id="places"
       style={{
         padding: "clamp(60px,10vw,120px) clamp(20px,8vw,80px)",
+
         background: "linear-gradient(180deg, #0d0b16 0%, #12101a 100%)",
       }}
     >
@@ -1181,10 +1632,15 @@ function PlacesSection() {
           <p
             style={{
               fontFamily: "var(--font-body)",
+
               fontSize: "0.75rem",
+
               letterSpacing: "0.25em",
+
               textTransform: "uppercase",
+
               color: "var(--muted-foreground)",
+
               marginBottom: "12px",
             }}
           >
@@ -1193,10 +1649,15 @@ function PlacesSection() {
           <h2
             style={{
               fontFamily: "var(--font-display)",
+
               fontSize: "clamp(2rem, 6vw, 4rem)",
+
               fontWeight: 400,
+
               fontStyle: "italic",
+
               color: "var(--foreground)",
+
               margin: "0 0 16px",
             }}
           >
@@ -1205,10 +1666,15 @@ function PlacesSection() {
           <p
             style={{
               fontFamily: "var(--font-display)",
+
               fontSize: "clamp(1rem, 2vw, 1.2rem)",
+
               fontStyle: "italic",
+
               fontWeight: 300,
+
               color: "var(--secondary-foreground)",
+
               maxWidth: "560px",
             }}
           >
@@ -1220,8 +1686,11 @@ function PlacesSection() {
         <div
           style={{
             display: "grid",
+
             gridTemplateColumns: "1fr 1fr",
+
             gap: "40px",
+
             alignItems: "start",
           }}
           className="places-grid"
@@ -1230,10 +1699,15 @@ function PlacesSection() {
           <div
             style={{
               position: "relative",
+
               aspectRatio: "4/5",
+
               background: "var(--card)",
+
               border: "1px solid var(--border)",
+
               overflow: "hidden",
+
               borderRadius: "8px",
             }}
           >
@@ -1241,7 +1715,9 @@ function PlacesSection() {
             <div
               style={{
                 position: "absolute",
+
                 inset: 0,
+
                 background:
                   "linear-gradient(135deg, #0d0b16 0%, #1a1528 50%, #0f0e18 100%)",
               }}
@@ -1249,10 +1725,14 @@ function PlacesSection() {
             <div
               style={{
                 position: "absolute",
+
                 inset: 0,
+
                 opacity: 0.15,
+
                 backgroundImage:
                   "radial-gradient(circle at 1px 1px, rgba(201,168,76,0.3) 1px, transparent 0)",
+
                 backgroundSize: "30px 30px",
               }}
             />
@@ -1261,9 +1741,13 @@ function PlacesSection() {
               viewBox="0 0 100 120"
               style={{
                 position: "absolute",
+
                 inset: 0,
+
                 width: "100%",
+
                 height: "100%",
+
                 pointerEvents: "none",
               }}
             >
@@ -1292,6 +1776,7 @@ function PlacesSection() {
 
             {places.map((p) => {
               const isAct = active?.name === p.name
+
               return (
                 <button
                   key={p.name}
@@ -1299,48 +1784,75 @@ function PlacesSection() {
                   onClick={() => setActive(isAct ? null : p)}
                   style={{
                     position: "absolute",
+
                     left: `${p.x}%`,
+
                     top: `${p.y}%`,
+
                     transform: "translate(-50%, -50%)",
+
                     background: "none",
+
                     border: "none",
+
                     display: "flex",
+
                     flexDirection: "column",
+
                     alignItems: "center",
+
                     gap: "3px",
+
                     cursor: "pointer",
+
                     zIndex: isAct ? 10 : 2,
+
                     padding: "4px",
                   }}
                 >
                   <div
                     style={{
                       width: isAct ? "14px" : "10px",
+
                       height: isAct ? "14px" : "10px",
+
                       borderRadius: "50%",
+
                       background: isAct
                         ? "var(--primary)"
                         : "rgba(201,168,76,0.7)",
+
                       boxShadow: isAct
                         ? "0 0 18px rgba(201,168,76,1), 0 0 30px rgba(201,168,76,0.6)"
                         : "0 0 8px rgba(201,168,76,0.5)",
+
                       border: isAct
                         ? "2px solid #fff"
                         : "1px solid rgba(255,255,255,0.4)",
+
                       transition: "all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
                     }}
                   />
                   <span
                     style={{
                       fontFamily: "var(--font-hand)",
+
                       fontSize: "0.82rem",
+
                       color: isAct ? "var(--primary)" : "rgba(240,234,214,0.9)",
+
                       whiteSpace: "nowrap",
+
                       textShadow: "0 2px 6px rgba(0,0,0,0.95)",
+
                       fontWeight: isAct ? 700 : 500,
+
                       background: isAct ? "rgba(9,8,14,0.75)" : "transparent",
+
                       padding: isAct ? "1px 6px" : "0",
+
                       borderRadius: "6px",
+
                       transition: "all 0.2s",
                     }}
                   >
@@ -1353,10 +1865,15 @@ function PlacesSection() {
             <div
               style={{
                 position: "absolute",
+
                 bottom: "12px",
+
                 right: "12px",
+
                 fontFamily: "var(--font-hand)",
+
                 fontSize: "0.8rem",
+
                 color: "rgba(201,168,76,0.4)",
               }}
             >
@@ -1370,28 +1887,41 @@ function PlacesSection() {
               <div
                 style={{
                   background: "var(--card)",
+
                   border: "1px solid var(--border)",
+
                   overflow: "hidden",
+
                   borderRadius: "8px",
+
                   animation: "fadeInUp 0.4s ease",
                 }}
               >
                 <div
                   style={{
                     padding: "14px 22px",
+
                     borderBottom: "1px solid var(--border)",
+
                     display: "flex",
+
                     justifyContent: "space-between",
+
                     alignItems: "center",
+
                     background: "rgba(255,255,255,0.01)",
                   }}
                 >
                   <span
                     style={{
                       fontSize: "0.75rem",
+
                       color: "var(--muted-foreground)",
+
                       fontFamily: "var(--font-body)",
+
                       letterSpacing: "0.15em",
+
                       textTransform: "uppercase",
                     }}
                   >
@@ -1401,22 +1931,33 @@ function PlacesSection() {
                     onClick={() => setActive(null)}
                     style={{
                       background: "rgba(201,168,76,0.1)",
+
                       border: "1px solid rgba(201,168,76,0.3)",
+
                       color: "var(--primary)",
+
                       fontSize: "0.75rem",
+
                       padding: "6px 14px",
+
                       borderRadius: "14px",
+
                       cursor: "pointer",
+
                       fontFamily: "var(--font-body)",
+
                       fontWeight: 500,
+
                       transition: "all 0.2s",
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.background = "var(--primary)"
+
                       e.currentTarget.style.color = "#09080e"
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.background = "rgba(201,168,76,0.1)"
+
                       e.currentTarget.style.color = "var(--primary)"
                     }}
                   >
@@ -1426,7 +1967,9 @@ function PlacesSection() {
                 <div
                   style={{
                     aspectRatio: "16/10",
+
                     overflow: "hidden",
+
                     background: "#1a1825",
                   }}
                 >
@@ -1435,8 +1978,11 @@ function PlacesSection() {
                     alt={active.name}
                     style={{
                       width: "100%",
+
                       height: "100%",
+
                       objectFit: "cover",
+
                       transition: "transform 0.6s ease",
                     }}
                   />
@@ -1445,10 +1991,15 @@ function PlacesSection() {
                   <p
                     style={{
                       fontFamily: "var(--font-body)",
+
                       fontSize: "0.75rem",
+
                       letterSpacing: "0.2em",
+
                       textTransform: "uppercase",
+
                       color: "var(--primary)",
+
                       margin: "0 0 10px",
                     }}
                   >
@@ -1457,10 +2008,15 @@ function PlacesSection() {
                   <p
                     style={{
                       fontFamily: "var(--font-display)",
+
                       fontSize: "1.2rem",
+
                       fontStyle: "italic",
+
                       color: "var(--foreground)",
+
                       lineHeight: 1.7,
+
                       margin: "0 0 16px",
                     }}
                   >
@@ -1469,8 +2025,11 @@ function PlacesSection() {
                   <p
                     style={{
                       fontFamily: "var(--font-hand)",
+
                       fontSize: "1rem",
+
                       color: "var(--muted-foreground)",
+
                       margin: 0,
                     }}
                   >
@@ -1482,10 +2041,15 @@ function PlacesSection() {
               <div
                 style={{
                   display: "grid",
+
                   gridTemplateColumns: "1fr",
+
                   gap: "12px",
+
                   maxHeight: "560px",
+
                   overflowY: "auto",
+
                   paddingRight: "8px",
                 }}
               >
@@ -1495,23 +2059,35 @@ function PlacesSection() {
                     onClick={() => setActive(p)}
                     style={{
                       background: "rgba(255,255,255,0.02)",
+
                       border: "1px solid var(--border)",
+
                       padding: "16px 20px",
+
                       textAlign: "left",
+
                       cursor: "pointer",
+
                       transition: "all 0.3s",
+
                       color: "inherit",
+
                       display: "flex",
+
                       alignItems: "center",
+
                       justifyContent: "space-between",
+
                       borderRadius: "6px",
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.borderColor = "rgba(201,168,76,0.6)"
+
                       e.currentTarget.style.background = "rgba(201,168,76,0.04)"
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.borderColor = "var(--border)"
+
                       e.currentTarget.style.background =
                         "rgba(255,255,255,0.02)"
                     }}
@@ -1519,7 +2095,9 @@ function PlacesSection() {
                     <div
                       style={{
                         display: "flex",
+
                         alignItems: "center",
+
                         gap: "14px",
                       }}
                     >
@@ -1528,9 +2106,13 @@ function PlacesSection() {
                         <p
                           style={{
                             fontFamily: "var(--font-display)",
+
                             fontSize: "1.05rem",
+
                             fontWeight: 500,
+
                             color: "var(--foreground)",
+
                             margin: "0 0 2px",
                           }}
                         >
@@ -1539,9 +2121,13 @@ function PlacesSection() {
                         <p
                           style={{
                             fontFamily: "var(--font-body)",
+
                             fontSize: "0.72rem",
+
                             color: "var(--muted-foreground)",
+
                             margin: 0,
+
                             letterSpacing: "0.1em",
                           }}
                         >
@@ -1552,7 +2138,9 @@ function PlacesSection() {
                     <span
                       style={{
                         color: "var(--primary)",
+
                         fontSize: "0.85rem",
+
                         opacity: 0.7,
                       }}
                     >
@@ -1571,103 +2159,165 @@ function PlacesSection() {
 }
 
 // ─── Section 06 — Photo Memory Wall ──────────────────────────────────────────
+
 const memoryPhotos = [
   {
     src: "/media/pics/pic_first_kfc_sep23.jpg",
+
     caption: "Our first picture at KFC · Sep 23, 2025.",
+
     rot: -4,
+
     date: "Sep 23, 2025",
   },
+
   {
     src: "/media/pics/pic_early_fun_college.jpg",
+
     caption: "Where we made fun from that early.",
+
     rot: 3,
+
     date: "Early Days",
   },
+
   {
     src: "/media/pics/pic_new_02_fence_laugh.jpg",
+
     caption: "Campus fence chaos & pure laughter.",
+
     rot: -3,
+
     date: "Oct 2025",
   },
+
   {
     src: "/media/pics/pic_new_03_blue_kurta_selfie.jpg",
+
     caption: "Favorite smiles & daily banter.",
+
     rot: 4,
+
     date: "Oct 2025",
   },
+
   {
     src: "/media/pics/pic_new_05_bus_moments.jpg",
+
     caption: "College bus teasing non-stop.",
+
     rot: -2,
+
     date: "Dec 2025",
   },
+
   {
     src: "/media/pics/pic_new_04_lake_squad.jpg",
+
     caption: "Lake embankment squad chilling.",
+
     rot: 3,
+
     date: "Dec 2025",
   },
+
   {
     src: "/media/pics/pic_new_01_highway_bridge.jpg",
+
     caption: "Midnight highway bridge breeze.",
+
     rot: -4,
+
     date: "Jan 2026",
   },
+
   {
     src: "/media/pics/pic_new_06_night_rain_hangout.jpg",
+
     caption: "After-rain night walks & tea.",
+
     rot: 2,
+
     date: "Jan 2026",
   },
+
   {
     src: "/media/pics/pic_new_08_rooftop_breeze.jpg",
+
     caption: "Golden hour rooftop balcony breeze.",
+
     rot: -3,
+
     date: "Mar 2026",
   },
+
   {
     src: "/media/pics/pic_new_07_maroon_night.jpg",
+
     caption: "Matching vibes in maroon.",
+
     rot: 4,
+
     date: "Mar 2026",
   },
+
   {
     src: "/media/pics/pic_new_09_mahabalipuram_view.jpg",
+
     caption: "Mahabalipuram cliff overlooking the sea.",
+
     rot: -2,
+
     date: "Jun 2026",
   },
+
   {
     src: "/media/pics/pic_new_10_mahabalipuram_trio.jpg",
+
     caption: "Mahabalipuram scenic squad trip.",
+
     rot: 3,
+
     date: "Jun 2026",
   },
+
   {
     src: "/media/pics/pic_new_11_pop_comic_duo.jpg",
+
     caption: "Pop comic energy & smiles.",
+
     rot: -4,
+
     date: "Aug 2026",
   },
+
   {
     src: "/media/pics/pic_6138822513551677908.jpg",
+
     caption: "Midnight birthday celebration.",
+
     rot: 2,
+
     date: "Sep 2026",
   },
+
   {
     src: "/media/pics/pic_muthe_mutharame.jpg",
+
     caption: "Muthe Mutharame ✦ My pearl.",
+
     rot: 3,
+
     date: "Forever",
   },
 ]
 
 function PhotoWallSection() {
   const ref = useReveal()
+
   const [lightbox, setLightbox] = useState<{
     src: string
+
     caption: string
   } | null>(null)
 
@@ -1676,6 +2326,7 @@ function PhotoWallSection() {
       id="photowall"
       style={{
         padding: "clamp(80px,12vw,140px) clamp(20px,6vw,80px)",
+
         background: "#09080e",
       }}
     >
@@ -1689,10 +2340,15 @@ function PhotoWallSection() {
           <h2
             style={{
               fontFamily: "var(--font-display)",
+
               fontSize: "clamp(2.5rem, 7vw, 5rem)",
+
               fontWeight: 400,
+
               fontStyle: "italic",
+
               color: "var(--foreground)",
+
               margin: "0 0 16px",
             }}
           >
@@ -1701,9 +2357,13 @@ function PhotoWallSection() {
           <p
             style={{
               fontFamily: "var(--font-display)",
+
               fontSize: "clamp(1rem, 2vw, 1.2rem)",
+
               fontStyle: "italic",
+
               fontWeight: 300,
+
               color: "var(--secondary-foreground)",
             }}
           >
@@ -1715,9 +2375,13 @@ function PhotoWallSection() {
         <div
           style={{
             display: "flex",
+
             flexWrap: "wrap",
+
             gap: "clamp(20px,4vw,40px)",
+
             justifyContent: "center",
+
             alignItems: "flex-start",
           }}
         >
@@ -1731,6 +2395,7 @@ function PhotoWallSection() {
               onClick={() =>
                 setLightbox({
                   src: p.src.replace("w=300&h=300", "w=800&h=800"),
+
                   caption: p.caption,
                 })
               }
@@ -1743,22 +2408,30 @@ function PhotoWallSection() {
 }
 
 // ─── Section 07 — The Fights ──────────────────────────────────────────────────
+
 const fightStages = [
   { emoji: "💥", label: "Fight", color: "#c0392b" },
+
   { emoji: "😤", label: "Anger", color: "#e67e22" },
+
   { emoji: "🤐", label: "Silence", color: "#7f8c8d" },
+
   { emoji: "🙄", label: "Pretending not to care", color: "#8e44ad" },
+
   { emoji: "🥺", label: "Missing each other secretly", color: "#2980b9" },
+
   { emoji: "🙂", label: "Back to normal", color: "var(--primary)" },
 ]
 
 function FightsSection() {
   const ref = useReveal()
+
   return (
     <section
       id="fights"
       style={{
         padding: "clamp(60px,8vw,100px) clamp(20px,8vw,100px)",
+
         background: "linear-gradient(180deg, #0d0b16 0%, #09080e 100%)",
       }}
     >
@@ -1771,10 +2444,15 @@ function FightsSection() {
           <h2
             style={{
               fontFamily: "var(--font-display)",
+
               fontSize: "clamp(2rem, 6vw, 4.5rem)",
+
               fontWeight: 400,
+
               fontStyle: "italic",
+
               color: "var(--foreground)",
+
               margin: "0 0 8px",
             }}
           >
@@ -1783,8 +2461,11 @@ function FightsSection() {
           <p
             style={{
               fontFamily: "var(--font-hand)",
+
               fontSize: "1.25rem",
+
               color: "var(--muted-foreground)",
+
               margin: 0,
             }}
           >
@@ -1796,9 +2477,13 @@ function FightsSection() {
         <div
           style={{
             display: "flex",
+
             flexDirection: "column",
+
             alignItems: "center",
+
             gap: "0",
+
             marginBottom: "36px",
           }}
         >
@@ -1807,30 +2492,44 @@ function FightsSection() {
               key={i}
               style={{
                 display: "flex",
+
                 flexDirection: "column",
+
                 alignItems: "center",
+
                 gap: "0",
               }}
             >
               <div
                 style={{
                   display: "flex",
+
                   alignItems: "center",
+
                   gap: "18px",
+
                   padding: "14px 28px",
+
                   background: "rgba(22, 19, 32, 0.85)",
+
                   border: `1px solid ${s.color}44`,
+
                   borderRadius: "14px",
+
                   width: "clamp(270px, 50vw, 380px)",
+
                   boxShadow: `0 4px 16px ${s.color}15`,
+
                   transition: "transform 0.2s ease, box-shadow 0.2s ease",
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = "scale(1.03)"
+
                   e.currentTarget.style.boxShadow = `0 6px 22px ${s.color}33`
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = "scale(1)"
+
                   e.currentTarget.style.boxShadow = `0 4px 16px ${s.color}15`
                 }}
               >
@@ -1838,9 +2537,13 @@ function FightsSection() {
                 <span
                   style={{
                     fontFamily: "var(--font-display)",
+
                     fontSize: "1.15rem",
+
                     fontStyle: "italic",
+
                     color: s.color,
+
                     fontWeight: 500,
                   }}
                 >
@@ -1851,7 +2554,9 @@ function FightsSection() {
                 <div
                   style={{
                     width: "2px",
+
                     height: "20px",
+
                     background:
                       "linear-gradient(to bottom, rgba(201,168,76,0.4), rgba(201,168,76,0.1))",
                   }}
@@ -1864,11 +2569,17 @@ function FightsSection() {
         <div
           style={{
             fontFamily: "var(--font-display)",
+
             fontSize: "clamp(1.1rem, 2.5vw, 1.4rem)",
+
             fontStyle: "italic",
+
             fontWeight: 300,
+
             lineHeight: 1.9,
+
             color: "rgba(240,234,214,0.85)",
+
             textAlign: "center",
           }}
         >
@@ -1892,38 +2603,54 @@ function FightsSection() {
 }
 
 // ─── Section 08 — What You Brought ───────────────────────────────────────────
+
 const gifts = [
   { label: "JOY", desc: "You gave me some of my happiest moments.", icon: "✦" },
+
   {
     label: "CHAOS",
+
     desc: "You somehow made ordinary days unforgettable.",
+
     icon: "⚡",
   },
+
   {
     label: "ADVENTURE",
+
     desc: "We travelled, explored, and collected stories.",
+
     icon: "🧭",
   },
+
   {
     label: "FIGHTS",
+
     desc: "Because apparently peace was too boring.",
+
     icon: "🔥",
   },
+
   { label: "MEMORIES", desc: "Too many to fit into one lifetime.", icon: "📷" },
+
   {
     label: "EMOTION",
+
     desc: "You gave me happiness and sorrow at their absolute peak.",
+
     icon: "♾",
   },
 ]
 
 function GiftsSection() {
   const ref = useReveal()
+
   return (
     <section
       id="gifts"
       style={{
         padding: "clamp(60px,10vw,120px) clamp(20px,6vw,80px)",
+
         background: "#09080e",
       }}
     >
@@ -1936,10 +2663,15 @@ function GiftsSection() {
           <h2
             style={{
               fontFamily: "var(--font-display)",
+
               fontSize: "clamp(2rem, 6vw, 4.5rem)",
+
               fontWeight: 400,
+
               fontStyle: "italic",
+
               color: "var(--foreground)",
+
               margin: "0 0 10px",
             }}
           >
@@ -1948,8 +2680,11 @@ function GiftsSection() {
           <p
             style={{
               fontFamily: "var(--font-hand)",
+
               fontSize: "1.2rem",
+
               color: "var(--muted-foreground)",
+
               margin: 0,
             }}
           >
@@ -1962,11 +2697,16 @@ function GiftsSection() {
           style={{
             background:
               "radial-gradient(ellipse at 50% 20%, rgba(38, 30, 20, 0.95) 0%, rgba(16, 14, 22, 0.98) 100%)",
+
             border: "2px solid rgba(201, 168, 76, 0.45)",
+
             borderRadius: "24px",
+
             padding: "clamp(24px, 4vw, 44px)",
+
             boxShadow:
               "0 20px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(201, 168, 76, 0.2)",
+
             marginBottom: "40px",
           }}
         >
@@ -1974,30 +2714,45 @@ function GiftsSection() {
           <div
             style={{
               display: "flex",
+
               flexDirection: "column",
+
               alignItems: "center",
+
               marginBottom: "36px",
             }}
           >
             <div
               style={{
                 position: "relative",
+
                 padding: "10px",
+
                 background: "rgba(25, 21, 33, 0.9)",
+
                 border: "1px solid rgba(201, 168, 76, 0.4)",
+
                 borderRadius: "16px",
+
                 boxShadow: "0 10px 30px rgba(0,0,0,0.6)",
+
                 maxWidth: "640px",
+
                 width: "100%",
               }}
             >
               <div
                 style={{
                   width: "100%",
+
                   aspectRatio: "16/10",
+
                   maxHeight: "360px",
+
                   borderRadius: "10px",
+
                   overflow: "hidden",
+
                   background: "#09080e",
                 }}
               >
@@ -2006,8 +2761,11 @@ function GiftsSection() {
                   alt="Us Together"
                   style={{
                     width: "100%",
+
                     height: "100%",
+
                     objectFit: "cover",
+
                     transition: "transform 0.4s ease",
                   }}
                   onMouseEnter={(e) =>
@@ -2021,9 +2779,13 @@ function GiftsSection() {
               <p
                 style={{
                   fontFamily: "var(--font-hand)",
+
                   fontSize: "1.3rem",
+
                   color: "var(--primary)",
+
                   margin: "12px 0 4px",
+
                   textAlign: "center",
                 }}
               >
@@ -2036,8 +2798,10 @@ function GiftsSection() {
           <div
             style={{
               display: "grid",
+
               gridTemplateColumns:
                 "repeat(auto-fit, minmax(clamp(240px, 30vw, 320px), 1fr))",
+
               gap: "16px",
             }}
           >
@@ -2046,29 +2810,41 @@ function GiftsSection() {
                 key={g.label}
                 style={{
                   background: "rgba(22, 18, 30, 0.8)",
+
                   border: "1px solid rgba(201, 168, 76, 0.25)",
+
                   borderRadius: "14px",
+
                   padding: "24px 20px",
+
                   transition: "all 0.25s ease",
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = "rgba(35, 28, 42, 0.95)"
+
                   e.currentTarget.style.borderColor = "var(--primary)"
+
                   e.currentTarget.style.transform = "translateY(-3px)"
+
                   e.currentTarget.style.boxShadow =
                     "0 8px 24px rgba(201, 168, 76, 0.18)"
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = "rgba(22, 18, 30, 0.8)"
+
                   e.currentTarget.style.borderColor = "rgba(201, 168, 76, 0.25)"
+
                   e.currentTarget.style.transform = "translateY(0)"
+
                   e.currentTarget.style.boxShadow = "none"
                 }}
               >
                 <div
                   style={{
                     fontSize: "1.6rem",
+
                     marginBottom: "10px",
+
                     color: "var(--primary)",
                   }}
                 >
@@ -2077,11 +2853,17 @@ function GiftsSection() {
                 <p
                   style={{
                     fontFamily: "var(--font-body)",
+
                     fontSize: "0.75rem",
+
                     letterSpacing: "0.25em",
+
                     textTransform: "uppercase",
+
                     color: "var(--primary)",
+
                     margin: "0 0 8px",
+
                     fontWeight: 600,
                   }}
                 >
@@ -2090,11 +2872,17 @@ function GiftsSection() {
                 <p
                   style={{
                     fontFamily: "var(--font-display)",
+
                     fontSize: "1.05rem",
+
                     fontStyle: "italic",
+
                     fontWeight: 300,
+
                     color: "var(--secondary-foreground)",
+
                     lineHeight: 1.55,
+
                     margin: 0,
                   }}
                 >
@@ -2108,10 +2896,15 @@ function GiftsSection() {
         <div
           style={{
             textAlign: "center",
+
             marginTop: "30px",
+
             fontFamily: "var(--font-display)",
+
             fontSize: "clamp(1.2rem, 3vw, 1.8rem)",
+
             fontStyle: "italic",
+
             color: "var(--foreground)",
           }}
         >
@@ -2127,93 +2920,125 @@ function GiftsSection() {
 }
 
 // ─── Section 08.5 — Birthday Gift Treasure Hunt ──────────────────────────────
+
 interface GiftClue {
   id: number
+
   giftNum: number
+
   title: string
+
   locationName: string
+
   hint: string
+
   roomHint: string
+
   defaultImg: string
+
   rewardTitle: string
+
   rewardMessage: string
+
+  bonusNote?: string
 }
 
 const DEFAULT_GIFT_CLUES: GiftClue[] = [
   {
     id: 1,
+
     giftNum: 1,
-    title: "Gift 01 · Where Your Morning Begins",
-    locationName: "Dressing Mirror & Vanity Corner",
-    hint: "Search around the dressing table & mirror where you start your day and fix your hair.",
-    roomHint: "Look carefully behind the vanity lights and cosmetic stands...",
-    defaultImg: "/media/gifts/gift_loc_1.jpg",
-    rewardTitle: "Gift #1 Discovered! 🎀",
+
+    title: "Gift 01 · The Crisper 'Big Box' Secret",
+
+    locationName: "Refrigerator · Lower 'Big Box' Drawer",
+
+    hint: "Open the refrigerator door and glance down low into the fresh vegetable & fruit drawer...",
+
+    roomHint:
+      "Look right inside the 'Big Box' drawer where fresh fruits and green vegetables chill!",
+
+    defaultImg: "/media/gifts/gift_fridge_bigbox.png",
+
+    rewardTitle: "Gift #1 Discovered! 🍎",
+
     rewardMessage:
-      "The hunt has officially begun! Unwrap your first surprise and smile.",
+      "The quest has begun! You found the first treasure hidden in the fridge!",
   },
+
   {
     id: 2,
+
     giftNum: 2,
-    title: "Gift 02 · Between Books & Quiet Thoughts",
-    locationName: "Study Desk & Memory Shelf",
-    hint: "Search where your study notebooks, diaries, and stationery rest.",
-    roomHint: "Tucked right beside your favorite reading corner or shelf...",
-    defaultImg: "/media/gifts/gift_loc_2.jpg",
-    rewardTitle: "Gift #2 Unlocked! 📖",
+
+    title: "Gift 02 · The Sub-Zero Freezer Surprise",
+
+    locationName: "Convertible Freezer · Movable Ice Maker Shelf",
+
+    hint: "Brrr! It's getting even colder! Check inside the freezer compartment right near the ice maker...",
+
+    roomHint:
+      "Tucked right beside the movable ice maker and sweet treats... don't let your fingers freeze!",
+
+    defaultImg: "/media/gifts/gift_freezer_ice.png",
+
+    rewardTitle: "Gift #2 Unlocked! ❄️",
+
     rewardMessage:
-      "You're a natural detective! Keep this wonderful energy going.",
+      "Chilled to perfection! You're an incredible detective. Now for the grand finale!",
   },
+
   {
     id: 3,
+
     giftNum: 3,
-    title: "Gift 03 · The Cozy Wardrobe Secret",
-    locationName: "Wardrobe & Clothing Nook",
-    hint: "Search inside your wardrobe where favorite jackets, dupattas, and outfits hang.",
-    roomHint: "Check the middle hanger shelf where secrets like to hide...",
-    defaultImg: "/media/gifts/gift_loc_3.jpg",
-    rewardTitle: "Gift #3 Found! 👗",
-    rewardMessage: "More than halfway there! Each surprise gets sweeter.",
-  },
-  {
-    id: 4,
-    giftNum: 4,
-    title: "Gift 04 · The Living Room Keepsake Corner",
-    locationName: "Living Room & Lounge Area",
-    hint: "Search where family chats happen, tea is served, and laughter echoes.",
-    roomHint: "Hidden in plain sight near your favorite sofa lounging nook...",
-    defaultImg: "/media/gifts/gift_loc_4.jpg",
-    rewardTitle: "Gift #4 Uncovered! ☕",
-    rewardMessage:
-      "Only one final mystery spot left! Ready for the grand finale?",
-  },
-  {
-    id: 5,
-    giftNum: 5,
-    title: "Gift 05 · The Grand Finale Treasure Spot",
-    locationName: "The Secret Bedside Keepsake",
-    hint: "The most special surprise of all! Search near your bedside treasure drawer.",
+
+    title: "Gift 03 · The Wardrobe Secret & The Gift Bag",
+
+    locationName: "Wardrobe Shelf · The White Quilted Gift Bag",
+
+    hint: "Head to your wardrobe where your favorite clothes rest. Look for the elegant white quilted bag tucked neatly among the clothes...",
+
     roomHint:
-      "The crown jewel of your birthday surprises... close your eyes and reach in!",
-    defaultImg: "/media/gifts/gift_loc_5.jpg",
-    rewardTitle: "All Gifts Found! 👑🎉",
+      "Tucked on the shelf right under the clothes... there sits the beautiful white gift bag!",
+
+    defaultImg: "/media/gifts/gift_wardrobe_bag.png",
+
+    rewardTitle: "Grand Gift Bag & Bonus Unlocked! 👑🎁",
+
     rewardMessage:
-      "Happy Birthday, Muthe Mutharame! You unlocked all your gifts!",
+      "Happy Birthday, Muthe Mutharame! You found the gift bag! Open the zip for your bonus surprise!",
+
+    bonusNote:
+      "✨ BONUS INSIDE THE BAG: Don't forget to open the zipper and look inside the handbag for your secret surprise bonus!",
   },
 ]
 
 function GiftHuntSection() {
   const ref = useReveal()
+
   const [foundList, setFoundList] = useState<boolean[]>(() => {
     try {
       const saved = localStorage.getItem("panda_gift_hunt_found")
-      if (saved) return JSON.parse(saved)
+
+      if (saved) {
+        const parsed = JSON.parse(saved)
+
+        if (
+          Array.isArray(parsed) &&
+          parsed.length === DEFAULT_GIFT_CLUES.length
+        ) {
+          return parsed
+        }
+      }
     } catch {}
-    return [false, false, false, false, false]
+
+    return new Array(DEFAULT_GIFT_CLUES.length).fill(false)
   })
 
   const [activeClueIndex, setActiveClueIndex] = useState<number>(() => {
     const firstUnfound = foundList.findIndex((f) => !f)
+
     return firstUnfound === -1 ? 0 : firstUnfound
   })
 
@@ -2221,47 +3046,66 @@ function GiftHuntSection() {
     () => {
       try {
         const saved = localStorage.getItem("panda_gift_hunt_custom_photos")
+
         if (saved) return JSON.parse(saved)
       } catch {}
+
       return {}
     },
   )
 
   const [lightboxImg, setLightboxImg] = useState<{
     src: string
+
     caption: string
   } | null>(null)
+
   const [toastMsg, setToastMsg] = useState<string | null>(null)
+
   const [confettiBurst, setConfettiBurst] = useState(false)
+
   const fileInputRef = useRef<HTMLInputElement>(null)
+
   const [uploadTargetId, setUploadTargetId] = useState<number | null>(null)
 
   const foundCount = foundList.filter(Boolean).length
+
   const allFound = foundCount === DEFAULT_GIFT_CLUES.length
+
   const currentClue = DEFAULT_GIFT_CLUES[activeClueIndex]
+
   const currentImg = customPhotos[currentClue.id] || currentClue.defaultImg
 
   const handleMarkFound = (index: number) => {
     const updated = [...foundList]
+
     updated[index] = true
+
     setFoundList(updated)
+
     try {
       localStorage.setItem("panda_gift_hunt_found", JSON.stringify(updated))
     } catch {}
 
     setConfettiBurst(true)
+
     setTimeout(() => setConfettiBurst(false), 2500)
 
     const reward = DEFAULT_GIFT_CLUES[index].rewardTitle
+
     setToastMsg(`🎉 ${reward} Revealed!`)
+
     setTimeout(() => setToastMsg(null), 3500)
 
     // Advance to next unfound clue
+
     const nextIndex = updated.findIndex((f, idx) => !f && idx > index)
+
     if (nextIndex !== -1) {
       setTimeout(() => setActiveClueIndex(nextIndex), 600)
     } else {
       const anyUnfound = updated.findIndex((f) => !f)
+
       if (anyUnfound !== -1) {
         setTimeout(() => setActiveClueIndex(anyUnfound), 600)
       }
@@ -2269,38 +3113,54 @@ function GiftHuntSection() {
   }
 
   const handleReset = () => {
-    const reset = [false, false, false, false, false]
+    const reset = new Array(DEFAULT_GIFT_CLUES.length).fill(false)
+
     setFoundList(reset)
+
     setActiveClueIndex(0)
+
     try {
       localStorage.setItem("panda_gift_hunt_found", JSON.stringify(reset))
     } catch {}
+
     setToastMsg("Quest reset! Happy searching! 🕵️‍♀️")
+
     setTimeout(() => setToastMsg(null), 3000)
   }
 
   const triggerUploadFor = (clueId: number) => {
     setUploadTargetId(clueId)
+
     fileInputRef.current?.click()
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
+
     if (!file || uploadTargetId === null) return
+
     const reader = new FileReader()
+
     reader.onload = () => {
       const dataUrl = reader.result as string
+
       const updated = { ...customPhotos, [uploadTargetId]: dataUrl }
+
       setCustomPhotos(updated)
+
       try {
         localStorage.setItem(
           "panda_gift_hunt_custom_photos",
+
           JSON.stringify(updated),
         )
       } catch {}
+
       setToastMsg(`Location photo updated for Gift #${uploadTargetId}! 📸`)
+
       setTimeout(() => setToastMsg(null), 3000)
     }
+
     reader.readAsDataURL(file)
   }
 
@@ -2309,8 +3169,10 @@ function GiftHuntSection() {
       id="gift-hunt"
       style={{
         padding: "clamp(60px,10vw,120px) clamp(20px,6vw,80px)",
+
         background:
           "radial-gradient(ellipse at 50% 10%, #151122 0%, #09080e 100%)",
+
         position: "relative",
       }}
     >
@@ -2337,12 +3199,19 @@ function GiftHuntSection() {
           <div
             style={{
               display: "inline-flex",
+
               alignItems: "center",
+
               gap: "8px",
+
               padding: "6px 20px",
+
               borderRadius: "9999px",
+
               background: "rgba(201, 168, 76, 0.15)",
+
               border: "1px solid rgba(201, 168, 76, 0.4)",
+
               marginBottom: "16px",
             }}
           >
@@ -2351,8 +3220,11 @@ function GiftHuntSection() {
               className="shimmer-text"
               style={{
                 fontFamily: "var(--font-display)",
+
                 fontSize: "1.1rem",
+
                 fontWeight: 600,
+
                 letterSpacing: "0.08em",
               }}
             >
@@ -2363,10 +3235,15 @@ function GiftHuntSection() {
           <h2
             style={{
               fontFamily: "var(--font-display)",
+
               fontSize: "clamp(2.2rem, 6vw, 4.5rem)",
+
               fontWeight: 400,
+
               fontStyle: "italic",
+
               color: "var(--foreground)",
+
               margin: "0 0 10px",
             }}
           >
@@ -2375,10 +3252,15 @@ function GiftHuntSection() {
           <p
             style={{
               fontFamily: "var(--font-hand)",
+
               fontSize: "1.3rem",
+
               color: "var(--primary)",
+
               maxWidth: "680px",
+
               margin: "0 auto",
+
               lineHeight: 1.5,
             }}
           >
@@ -2393,18 +3275,31 @@ function GiftHuntSection() {
           <div
             style={{
               position: "fixed",
+
               bottom: "30px",
+
               left: "50%",
+
               transform: "translateX(-50%)",
+
               background: "rgba(30, 24, 18, 0.95)",
+
               border: "1px solid var(--primary)",
+
               boxShadow: "0 10px 30px rgba(0,0,0,0.8), 0 0 25px var(--primary)",
+
               color: "#fff",
+
               padding: "12px 28px",
+
               borderRadius: "9999px",
+
               fontSize: "1rem",
+
               fontWeight: 500,
+
               zIndex: 1000,
+
               animation: "fadeIn 0.3s ease",
             }}
           >
@@ -2416,19 +3311,28 @@ function GiftHuntSection() {
         <div
           style={{
             background: "rgba(22, 18, 30, 0.8)",
+
             border: "1px solid rgba(201, 168, 76, 0.3)",
+
             borderRadius: "16px",
+
             padding: "20px 24px",
+
             marginBottom: "32px",
           }}
         >
           <div
             style={{
               display: "flex",
+
               justifyContent: "space-between",
+
               alignItems: "center",
+
               marginBottom: "12px",
+
               flexWrap: "wrap",
+
               gap: "10px",
             }}
           >
@@ -2436,9 +3340,13 @@ function GiftHuntSection() {
               <span
                 style={{
                   fontFamily: "var(--font-display)",
+
                   fontSize: "1.3rem",
+
                   fontStyle: "italic",
+
                   color: "var(--primary)",
+
                   fontWeight: 600,
                 }}
               >
@@ -2451,11 +3359,17 @@ function GiftHuntSection() {
                 onClick={handleReset}
                 style={{
                   background: "none",
+
                   border: "1px solid rgba(201, 168, 76, 0.25)",
+
                   color: "var(--muted-foreground)",
+
                   borderRadius: "9999px",
+
                   padding: "4px 14px",
+
                   fontSize: "0.75rem",
+
                   cursor: "pointer",
                 }}
                 title="Restart treasure hunt"
@@ -2469,20 +3383,29 @@ function GiftHuntSection() {
           <div
             style={{
               width: "100%",
+
               height: "10px",
+
               background: "rgba(255, 255, 255, 0.08)",
+
               borderRadius: "9999px",
+
               overflow: "hidden",
             }}
           >
             <div
               style={{
                 width: `${(foundCount / DEFAULT_GIFT_CLUES.length) * 100}%`,
+
                 height: "100%",
+
                 background:
                   "linear-gradient(90deg, #c9a84c 0%, #fff0b3 50%, #c9a84c 100%)",
+
                 borderRadius: "9999px",
+
                 transition: "width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)",
+
                 boxShadow: "0 0 12px rgba(201, 168, 76, 0.5)",
               }}
             />
@@ -2492,37 +3415,56 @@ function GiftHuntSection() {
           <div
             style={{
               display: "flex",
+
               gap: "10px",
+
               marginTop: "18px",
+
               overflowX: "auto",
+
               paddingBottom: "4px",
             }}
           >
             {DEFAULT_GIFT_CLUES.map((c, i) => {
               const isFound = foundList[i]
+
               const isCurrent = activeClueIndex === i
+
               return (
                 <button
                   key={c.id}
                   onClick={() => setActiveClueIndex(i)}
                   style={{
                     display: "inline-flex",
+
                     alignItems: "center",
+
                     gap: "6px",
+
                     padding: "8px 16px",
+
                     borderRadius: "9999px",
+
                     fontSize: "0.8rem",
+
                     fontWeight: 600,
+
                     letterSpacing: "0.05em",
+
                     textTransform: "uppercase",
+
                     cursor: "pointer",
+
                     transition: "all 0.25s ease",
+
                     whiteSpace: "nowrap",
+
                     background: isCurrent
                       ? "rgba(201, 168, 76, 0.25)"
                       : isFound
                         ? "rgba(46, 204, 113, 0.15)"
                         : "rgba(255, 255, 255, 0.05)",
+
                     border: `1px solid ${
                       isCurrent
                         ? "var(--primary)"
@@ -2530,6 +3472,7 @@ function GiftHuntSection() {
                           ? "rgba(46, 204, 113, 0.4)"
                           : "rgba(255, 255, 255, 0.1)"
                     }`,
+
                     color: isCurrent
                       ? "var(--primary)"
                       : isFound
@@ -2551,14 +3494,22 @@ function GiftHuntSection() {
             style={{
               background:
                 "radial-gradient(circle at 50% 20%, rgba(32, 26, 18, 0.95) 0%, rgba(16, 14, 22, 0.98) 100%)",
+
               border: "2px solid rgba(201, 168, 76, 0.45)",
+
               borderRadius: "24px",
+
               padding: "clamp(24px, 4vw, 44px)",
+
               boxShadow:
                 "0 20px 50px rgba(0, 0, 0, 0.7), 0 0 35px rgba(201, 168, 76, 0.2)",
+
               display: "grid",
+
               gridTemplateColumns: "1fr 1fr",
+
               gap: "clamp(24px, 4vw, 48px)",
+
               alignItems: "center",
             }}
             className="grid-responsive"
@@ -2568,16 +3519,23 @@ function GiftHuntSection() {
               <div
                 style={{
                   position: "relative",
+
                   padding: "10px",
+
                   background: "rgba(25, 21, 33, 0.9)",
+
                   border: "1px solid rgba(201, 168, 76, 0.35)",
+
                   borderRadius: "16px",
+
                   boxShadow: "0 15px 35px rgba(0,0,0,0.6)",
+
                   cursor: "pointer",
                 }}
                 onClick={() =>
                   setLightboxImg({
                     src: currentImg,
+
                     caption: `${currentClue.title} · ${currentClue.locationName}`,
                   })
                 }
@@ -2585,9 +3543,13 @@ function GiftHuntSection() {
                 <div
                   style={{
                     width: "100%",
+
                     aspectRatio: "4/3",
+
                     borderRadius: "10px",
+
                     overflow: "hidden",
+
                     background: "#09080e",
                   }}
                 >
@@ -2596,8 +3558,11 @@ function GiftHuntSection() {
                     alt={currentClue.title}
                     style={{
                       width: "100%",
+
                       height: "100%",
+
                       objectFit: "cover",
+
                       transition: "transform 0.4s ease",
                     }}
                     onMouseEnter={(e) =>
@@ -2611,17 +3576,24 @@ function GiftHuntSection() {
                 <div
                   style={{
                     display: "flex",
+
                     justifyContent: "space-between",
+
                     alignItems: "center",
+
                     marginTop: "10px",
+
                     padding: "0 4px",
                   }}
                 >
                   <p
                     style={{
                       fontFamily: "var(--font-hand)",
+
                       fontSize: "1.15rem",
+
                       color: "var(--primary)",
+
                       margin: 0,
                     }}
                   >
@@ -2630,15 +3602,22 @@ function GiftHuntSection() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
+
                       triggerUploadFor(currentClue.id)
                     }}
                     style={{
                       background: "rgba(201, 168, 76, 0.15)",
+
                       border: "1px solid rgba(201, 168, 76, 0.35)",
+
                       color: "var(--primary)",
+
                       borderRadius: "6px",
+
                       padding: "3px 8px",
+
                       fontSize: "0.7rem",
+
                       cursor: "pointer",
                     }}
                     title="Upload the exact location photo from your home"
@@ -2654,32 +3633,53 @@ function GiftHuntSection() {
               <div
                 style={{
                   display: "inline-flex",
+
                   alignItems: "center",
+
                   gap: "8px",
+
                   padding: "4px 14px",
+
                   borderRadius: "9999px",
+
                   background: "rgba(201, 168, 76, 0.15)",
+
                   border: "1px solid rgba(201, 168, 76, 0.35)",
+
                   color: "var(--primary)",
+
                   fontSize: "0.75rem",
+
                   fontWeight: 600,
+
                   letterSpacing: "0.1em",
+
                   textTransform: "uppercase",
+
                   marginBottom: "14px",
                 }}
               >
                 <span>🔎</span>
-                <span>Active Clue {activeClueIndex + 1} of 5</span>
+                <span>
+                  Active Clue {activeClueIndex + 1} of{" "}
+                  {DEFAULT_GIFT_CLUES.length}
+                </span>
               </div>
 
               <h3
                 style={{
                   fontFamily: "var(--font-display)",
+
                   fontSize: "clamp(1.8rem, 4vw, 2.6rem)",
+
                   fontWeight: 500,
+
                   fontStyle: "italic",
+
                   color: "var(--foreground)",
+
                   margin: "0 0 14px",
+
                   lineHeight: 1.2,
                 }}
               >
@@ -2689,19 +3689,28 @@ function GiftHuntSection() {
               <div
                 style={{
                   background: "rgba(255, 255, 255, 0.04)",
+
                   borderLeft: "3px solid var(--primary)",
+
                   padding: "16px 20px",
+
                   borderRadius: "0 12px 12px 0",
-                  marginBottom: "20px",
+
+                  marginBottom: "16px",
                 }}
               >
                 <p
                   style={{
                     fontFamily: "var(--font-display)",
+
                     fontSize: "1.2rem",
+
                     fontStyle: "italic",
+
                     color: "#fff3cf",
+
                     lineHeight: 1.7,
+
                     margin: "0 0 8px",
                   }}
                 >
@@ -2710,8 +3719,11 @@ function GiftHuntSection() {
                 <p
                   style={{
                     fontFamily: "var(--font-body)",
+
                     fontSize: "0.85rem",
+
                     color: "var(--muted-foreground)",
+
                     margin: 0,
                   }}
                 >
@@ -2719,12 +3731,84 @@ function GiftHuntSection() {
                 </p>
               </div>
 
+              {/* 🌟 Special Bonus Inside The Bag Notice 🌟 */}
+              {currentClue.bonusNote && (
+                <div
+                  style={{
+                    background:
+                      "linear-gradient(135deg, rgba(201, 168, 76, 0.22) 0%, rgba(232, 199, 107, 0.1) 100%)",
+
+                    border: "1.5px solid var(--primary)",
+
+                    borderRadius: "14px",
+
+                    padding: "14px 18px",
+
+                    marginBottom: "22px",
+
+                    display: "flex",
+
+                    alignItems: "center",
+
+                    gap: "14px",
+
+                    boxShadow:
+                      "0 8px 24px rgba(201, 168, 76, 0.3), inset 0 0 15px rgba(201, 168, 76, 0.1)",
+                  }}
+                >
+                  <span style={{ fontSize: "2rem" }}>🎁</span>
+                  <div>
+                    <span
+                      style={{
+                        fontFamily: "var(--font-body)",
+
+                        fontSize: "0.72rem",
+
+                        letterSpacing: "0.2em",
+
+                        textTransform: "uppercase",
+
+                        color: "var(--primary)",
+
+                        fontWeight: 700,
+
+                        display: "block",
+
+                        marginBottom: "4px",
+                      }}
+                    >
+                      🌟 Secret Bonus Inside!
+                    </span>
+                    <p
+                      style={{
+                        fontFamily: "var(--font-hand)",
+
+                        fontSize: "1.15rem",
+
+                        color: "#fff3cf",
+
+                        margin: 0,
+
+                        lineHeight: 1.45,
+
+                        fontWeight: 600,
+                      }}
+                    >
+                      {currentClue.bonusNote}
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Action Button */}
               <div
                 style={{
                   display: "flex",
+
                   alignItems: "center",
+
                   gap: "14px",
+
                   flexWrap: "wrap",
                 }}
               >
@@ -2733,28 +3817,43 @@ function GiftHuntSection() {
                     onClick={() => handleMarkFound(activeClueIndex)}
                     style={{
                       display: "inline-flex",
+
                       alignItems: "center",
+
                       gap: "10px",
+
                       padding: "14px 32px",
+
                       borderRadius: "9999px",
+
                       background:
                         "linear-gradient(135deg, #c9a84c 0%, #e8c76b 100%)",
+
                       color: "#09080e",
+
                       fontWeight: 700,
+
                       fontSize: "1rem",
+
                       letterSpacing: "0.05em",
+
                       border: "none",
+
                       cursor: "pointer",
+
                       boxShadow: "0 6px 24px rgba(201, 168, 76, 0.4)",
+
                       transition: "all 0.25s ease",
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = "scale(1.05)"
+
                       e.currentTarget.style.boxShadow =
                         "0 8px 30px rgba(201, 168, 76, 0.6)"
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = "scale(1)"
+
                       e.currentTarget.style.boxShadow =
                         "0 6px 24px rgba(201, 168, 76, 0.4)"
                     }}
@@ -2767,14 +3866,23 @@ function GiftHuntSection() {
                   <div
                     style={{
                       display: "inline-flex",
+
                       alignItems: "center",
+
                       gap: "10px",
+
                       padding: "12px 24px",
+
                       borderRadius: "9999px",
+
                       background: "rgba(46, 204, 113, 0.2)",
+
                       border: "1px solid #2ecc71",
+
                       color: "#2ecc71",
+
                       fontWeight: 600,
+
                       fontSize: "0.95rem",
                     }}
                   >
@@ -2787,11 +3895,14 @@ function GiftHuntSection() {
           </div>
         ) : (
           /* ─── Grand All-Gifts-Found Celebration Screen ─── */
+
           <div
             className="muthe-card"
             style={{
               textAlign: "center",
+
               padding: "clamp(36px, 6vw, 60px) clamp(20px, 5vw, 40px)",
+
               position: "relative",
             }}
           >
@@ -2801,36 +3912,87 @@ function GiftHuntSection() {
             <h3
               style={{
                 fontFamily: "var(--font-display)",
+
                 fontSize: "clamp(2.4rem, 6vw, 4rem)",
+
                 fontWeight: 600,
+
                 fontStyle: "italic",
+
                 color: "#fff3cf",
+
                 margin: "0 0 12px",
+
                 textShadow: "0 0 30px rgba(201, 168, 76, 0.4)",
               }}
             >
-              All 5 Gifts Unlocked!
+              All {DEFAULT_GIFT_CLUES.length} Gifts Unlocked!
             </h3>
             <p
               style={{
                 fontFamily: "var(--font-body)",
+
                 fontSize: "0.85rem",
+
                 letterSpacing: "0.25em",
+
                 textTransform: "uppercase",
+
                 color: "var(--primary)",
-                marginBottom: "24px",
+
+                marginBottom: "20px",
               }}
             >
               Happy Birthday, Muthe Mutharame!
             </p>
+
+            <div
+              style={{
+                display: "inline-flex",
+
+                alignItems: "center",
+
+                gap: "10px",
+
+                padding: "10px 24px",
+
+                background: "rgba(201, 168, 76, 0.18)",
+
+                border: "1px solid var(--primary)",
+
+                borderRadius: "9999px",
+
+                color: "#fff3cf",
+
+                fontFamily: "var(--font-hand)",
+
+                fontSize: "1.25rem",
+
+                marginBottom: "24px",
+              }}
+            >
+              <span>🎁</span>
+              <span>
+                Reminder: Check inside the white gift bag for your bonus
+                surprise!
+              </span>
+              <span>✨</span>
+            </div>
+
             <p
               style={{
                 fontFamily: "var(--font-display)",
+
                 fontSize: "clamp(1.1rem, 2.5vw, 1.4rem)",
+
                 fontStyle: "italic",
+
                 color: "rgba(240, 234, 214, 0.9)",
+
                 maxWidth: "600px",
+
                 margin: "0 auto 36px",
+
                 lineHeight: 1.8,
               }}
             >
@@ -2839,11 +4001,15 @@ function GiftHuntSection() {
               remember that having you in my life is the greatest gift I could
               ever ask for."
             </p>
+
             <div
               style={{
                 display: "flex",
+
                 justifyContent: "center",
+
                 gap: "16px",
+
                 flexWrap: "wrap",
               }}
             >
@@ -2851,17 +4017,28 @@ function GiftHuntSection() {
                 onClick={handleReset}
                 style={{
                   display: "inline-flex",
+
                   alignItems: "center",
+
                   gap: "8px",
+
                   padding: "12px 28px",
+
                   borderRadius: "9999px",
+
                   background:
                     "linear-gradient(135deg, #c9a84c 0%, #e8c76b 100%)",
+
                   color: "#09080e",
+
                   fontWeight: 600,
+
                   fontSize: "0.9rem",
+
                   border: "none",
+
                   cursor: "pointer",
+
                   boxShadow: "0 4px 20px rgba(201, 168, 76, 0.4)",
                 }}
               >
@@ -2877,38 +4054,55 @@ function GiftHuntSection() {
 }
 
 // ─── Section 09 — Things I'll Never Forget ───────────────────────────────────
+
 const neverForget = [
   "The random conversations.",
+
   "The unnecessary fights.",
+
   "The silent understanding.",
+
   "The travelling.",
+
   "The stupid jokes.",
+
   "The serious conversations.",
+
   "The places.",
+
   "The photos.",
+
   "The memories nobody else understands.",
 ]
 
 function NeverForgetSection() {
   const ref = useReveal()
+
   const [visible, setVisible] = useState<number>(0)
+
   const sectionRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     const el = sectionRef.current
+
     if (!el) return
+
     const obs = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           neverForget.forEach((_, i) => {
             setTimeout(() => setVisible((v) => Math.max(v, i + 1)), i * 400)
           })
+
           obs.disconnect()
         }
       },
+
       { threshold: 0.2 },
     )
+
     obs.observe(el)
+
     return () => obs.disconnect()
   }, [])
 
@@ -2917,6 +4111,7 @@ function NeverForgetSection() {
       ref={sectionRef}
       style={{
         padding: "clamp(80px,12vw,140px) clamp(20px,8vw,100px)",
+
         background:
           "radial-gradient(ellipse at 50% 30%, #1a1220 0%, #09080e 60%)",
       }}
@@ -2926,10 +4121,15 @@ function NeverForgetSection() {
           <h2
             style={{
               fontFamily: "var(--font-display)",
+
               fontSize: "clamp(2rem, 6vw, 4.5rem)",
+
               fontWeight: 400,
+
               fontStyle: "italic",
+
               color: "var(--foreground)",
+
               margin: 0,
             }}
           >
@@ -2943,18 +4143,26 @@ function NeverForgetSection() {
               key={i}
               style={{
                 opacity: visible > i ? 1 : 0,
+
                 transform: visible > i ? "translateY(0)" : "translateY(16px)",
+
                 transition: "opacity 0.7s ease, transform 0.7s ease",
               }}
             >
               <p
                 style={{
                   fontFamily: "var(--font-display)",
+
                   fontSize: "clamp(1.2rem, 3vw, 1.8rem)",
+
                   fontStyle: "italic",
+
                   fontWeight: 300,
+
                   color: "rgba(240,234,214,0.85)",
+
                   margin: 0,
+
                   lineHeight: 1.4,
                 }}
               >
@@ -2964,8 +4172,11 @@ function NeverForgetSection() {
                 <div
                   style={{
                     width: "40px",
+
                     height: "1px",
+
                     background: "var(--border)",
+
                     margin: "12px auto 0",
                   }}
                 />
@@ -2977,16 +4188,22 @@ function NeverForgetSection() {
         <div
           style={{
             marginTop: "60px",
+
             opacity: visible >= neverForget.length ? 1 : 0,
+
             transition: "opacity 1s ease 0.5s",
           }}
         >
           <p
             style={{
               fontFamily: "var(--font-display)",
+
               fontSize: "clamp(1.1rem, 2.5vw, 1.5rem)",
+
               fontStyle: "italic",
+
               color: "var(--secondary-foreground)",
+
               lineHeight: 1.8,
             }}
           >
@@ -3004,13 +4221,16 @@ function NeverForgetSection() {
 }
 
 // ─── Section 10 — The Letter ──────────────────────────────────────────────────
+
 function LetterSection() {
   const ref = useReveal()
+
   return (
     <section
       id="letter"
       style={{
         padding: "clamp(80px,12vw,140px) clamp(20px,6vw,60px)",
+
         background: "linear-gradient(180deg, #09080e 0%, #0f0e18 100%)",
       }}
     >
@@ -3023,9 +4243,12 @@ function LetterSection() {
           className="paper-texture"
           style={{
             padding: "clamp(36px,8vw,72px) clamp(30px,6vw,64px)",
+
             boxShadow:
               "0 40px 100px rgba(0,0,0,0.8), 0 0 0 1px rgba(201,168,76,0.1)",
+
             transform: "rotate(-0.3deg)",
+
             position: "relative",
           }}
         >
@@ -3033,9 +4256,12 @@ function LetterSection() {
           <div
             style={{
               position: "absolute",
+
               inset: "60px 40px",
+
               backgroundImage:
                 "repeating-linear-gradient(to bottom, transparent, transparent 31px, rgba(100,80,40,0.08) 31px, rgba(100,80,40,0.08) 32px)",
+
               pointerEvents: "none",
             }}
           />
@@ -3043,11 +4269,17 @@ function LetterSection() {
           <h2
             style={{
               fontFamily: "var(--font-display)",
+
               fontSize: "clamp(1.8rem, 5vw, 3rem)",
+
               fontWeight: 600,
+
               fontStyle: "italic",
+
               color: "#2a1f0e",
+
               margin: "0 0 40px",
+
               position: "relative",
             }}
           >
@@ -3057,9 +4289,13 @@ function LetterSection() {
           <div
             style={{
               fontFamily: "var(--font-hand)",
+
               fontSize: "clamp(1.15rem, 2.5vw, 1.35rem)",
+
               lineHeight: 2,
+
               color: "#3a2a10",
+
               position: "relative",
             }}
           >
@@ -3092,7 +4328,9 @@ function LetterSection() {
             <div
               style={{
                 height: "1px",
+
                 background: "rgba(100,80,40,0.2)",
+
                 margin: "32px 0",
               }}
             />
@@ -3105,14 +4343,18 @@ function LetterSection() {
             <div
               style={{
                 height: "1px",
+
                 background: "rgba(100,80,40,0.2)",
+
                 margin: "32px 0",
               }}
             />
             <p
               style={{
                 fontSize: "1rem",
+
                 color: "#6a4a20",
+
                 fontStyle: "italic",
               }}
             >
@@ -3127,50 +4369,77 @@ function LetterSection() {
 }
 
 // ─── Section 11 — The Final 12:00 AM Moment ──────────────────────────────────
+
 function FinalSection() {
   const [clockStep, setClockStep] = useState(0)
+
   const [revealed, setRevealed] = useState(false)
+
   const [blessingCount, setBlessingCount] = useState(365)
+
   const [floatingHearts, setFloatingHearts] = useState<Array<{
     id: number
+
     tx: number
+
     ty: number
+
     emoji: string
+
     left: number
   }>>([])
+
   const audioRef = useRef<HTMLAudioElement>(null)
+
   const [isPlaying, setIsPlaying] = useState(false)
+
   const sectionRef = useRef<HTMLElement>(null)
+
   const triggered = useRef(false)
 
   useEffect(() => {
     const el = sectionRef.current
+
     if (!el) return
+
     const obs = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !triggered.current) {
           triggered.current = true
+
           const t1 = setTimeout(() => setClockStep(1), 600)
+
           const t2 = setTimeout(() => setClockStep(2), 2400)
+
           const t3 = setTimeout(() => setClockStep(3), 3600)
+
           const t4 = setTimeout(() => setRevealed(true), 5200)
+
           return () => [t1, t2, t3, t4].forEach(clearTimeout)
         }
       },
+
       { threshold: 0.3 },
     )
+
     obs.observe(el)
+
     return () => obs.disconnect()
   }, [])
 
   // Autoplay Muthe Mutharame song when revealed
+
   useEffect(() => {
     if (revealed && audioRef.current) {
       audioRef.current.volume = 0.85
+
       const playPromise = audioRef.current.play()
+
       if (playPromise !== undefined) {
         playPromise
+
           .then(() => setIsPlaying(true))
+
           .catch((err) => {
             console.log("Audio autoplay waiting for user interaction:", err)
           })
@@ -3180,36 +4449,55 @@ function FinalSection() {
 
   const toggleMusic = () => {
     if (!audioRef.current) return
+
     if (isPlaying) {
       audioRef.current.pause()
+
       setIsPlaying(false)
     } else {
       audioRef.current.volume = 0.85
+
       audioRef.current
+
         .play()
+
         .then(() => setIsPlaying(true))
+
         .catch((e) => console.error(e))
     }
   }
 
   const handleShowerLove = () => {
     setBlessingCount((prev) => prev + 1)
+
     if (audioRef.current && audioRef.current.paused) {
       audioRef.current.volume = 0.85
+
       audioRef.current
+
         .play()
+
         .then(() => setIsPlaying(true))
+
         .catch(() => {})
     }
+
     const emojis = ["💖", "❤️", "✨", "🌸", "⭐", "💎", "💐"]
+
     const newHearts = Array.from({ length: 9 }).map((_, i) => ({
       id: Date.now() + i,
+
       tx: (Math.random() - 0.5) * 260,
+
       ty: -140 - Math.random() * 180,
+
       emoji: emojis[Math.floor(Math.random() * emojis.length)],
+
       left: 35 + Math.random() * 30,
     }))
+
     setFloatingHearts((prev) => [...prev, ...newHearts])
+
     setTimeout(() => {
       setFloatingHearts((prev) => prev.slice(newHearts.length))
     }, 2000)
@@ -3221,16 +4509,25 @@ function FinalSection() {
       ref={sectionRef}
       style={{
         minHeight: "100vh",
+
         display: "flex",
+
         flexDirection: "column",
+
         alignItems: "center",
+
         justifyContent: "center",
+
         textAlign: "center",
+
         padding: "clamp(60px,10vw,120px) clamp(20px,8vw,80px)",
+
         background: revealed
           ? "radial-gradient(ellipse at 50% 40%, #1a120a 0%, #09080e 60%)"
           : "#09080e",
+
         transition: "background 2s ease",
+
         position: "relative",
       }}
     >
@@ -3239,15 +4536,24 @@ function FinalSection() {
         <div
           style={{
             position: "absolute",
+
             top: "30%",
+
             left: "50%",
+
             transform: "translate(-50%,-50%)",
+
             width: "800px",
+
             height: "800px",
+
             borderRadius: "50%",
+
             background:
               "radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 70%)",
+
             pointerEvents: "none",
+
             animation: "fadeIn 3s ease",
           }}
         />
@@ -3259,16 +4565,22 @@ function FinalSection() {
           <div
             style={{
               marginBottom: "60px",
+
               fontFamily: "var(--font-display)",
+
               fontWeight: 300,
             }}
           >
             <div
               style={{
                 fontSize: "clamp(3rem, 10vw, 6rem)",
+
                 color: "rgba(240,234,214,0.15)",
+
                 letterSpacing: "0.1em",
+
                 transition: "all 0.8s ease",
+
                 animation: clockStep > 0 ? "clock-tick 0.5s ease" : "none",
               }}
             >
@@ -3287,10 +4599,15 @@ function FinalSection() {
             <p
               style={{
                 fontFamily: "var(--font-body)",
+
                 fontSize: "0.75rem",
+
                 letterSpacing: "0.3em",
+
                 textTransform: "uppercase",
+
                 color: "var(--primary)",
+
                 marginBottom: "20px",
               }}
             >
@@ -3299,11 +4616,17 @@ function FinalSection() {
             <h1
               style={{
                 fontFamily: "var(--font-display)",
+
                 fontSize: "clamp(3rem, 10vw, 7rem)",
+
                 fontWeight: 600,
+
                 color: "var(--primary)",
+
                 margin: "0 0 20px",
+
                 lineHeight: 1,
+
                 letterSpacing: "-0.02em",
               }}
             >
@@ -3312,10 +4635,15 @@ function FinalSection() {
             <p
               style={{
                 fontFamily: "var(--font-display)",
+
                 fontSize: "clamp(1.5rem, 4vw, 2.5rem)",
+
                 fontStyle: "italic",
+
                 fontWeight: 300,
+
                 color: "var(--foreground)",
+
                 marginBottom: "40px",
               }}
             >
@@ -3325,11 +4653,17 @@ function FinalSection() {
             <div
               style={{
                 fontFamily: "var(--font-display)",
+
                 fontSize: "clamp(1rem, 2.2vw, 1.25rem)",
+
                 fontStyle: "italic",
+
                 fontWeight: 300,
+
                 lineHeight: 1.9,
+
                 color: "rgba(240,234,214,0.75)",
+
                 marginBottom: "40px",
               }}
             >
@@ -3352,8 +4686,11 @@ function FinalSection() {
               className="muthe-card"
               style={{
                 marginTop: "40px",
+
                 marginBottom: "50px",
+
                 padding: "clamp(28px, 5vw, 48px) clamp(18px, 4vw, 36px)",
+
                 position: "relative",
               }}
             >
@@ -3363,12 +4700,19 @@ function FinalSection() {
                   key={h.id}
                   style={{
                     position: "absolute",
+
                     bottom: "70px",
+
                     left: `${h.left}%`,
+
                     pointerEvents: "none",
+
                     fontSize: "1.8rem",
+
                     animation: "heart-burst 1.6s ease-out forwards",
+
                     transform: `translate(${h.tx}px, ${h.ty}px)`,
+
                     zIndex: 20,
                   }}
                 >
@@ -3390,26 +4734,36 @@ function FinalSection() {
               <div
                 style={{
                   display: "flex",
+
                   justifyContent: "center",
+
                   marginBottom: "20px",
                 }}
               >
                 <div
                   style={{
                     display: "inline-flex",
+
                     alignItems: "center",
+
                     gap: "12px",
+
                     padding: "8px 22px",
+
                     borderRadius: "9999px",
+
                     background: isPlaying
                       ? "rgba(201, 168, 76, 0.22)"
                       : "rgba(255, 255, 255, 0.08)",
+
                     border: `1px solid ${
                       isPlaying ? "var(--primary)" : "rgba(201, 168, 76, 0.35)"
                     }`,
+
                     boxShadow: isPlaying
                       ? "0 0 25px rgba(201, 168, 76, 0.35)"
                       : "none",
+
                     transition: "all 0.3s ease",
                   }}
                 >
@@ -3417,18 +4771,31 @@ function FinalSection() {
                     onClick={toggleMusic}
                     style={{
                       background: "var(--primary)",
+
                       color: "#09080e",
+
                       border: "none",
+
                       width: "32px",
+
                       height: "32px",
+
                       borderRadius: "50%",
+
                       display: "flex",
+
                       alignItems: "center",
+
                       justifyContent: "center",
+
                       cursor: "pointer",
+
                       fontSize: "0.85rem",
+
                       fontWeight: "bold",
+
                       boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
+
                       transition: "transform 0.2s ease",
                     }}
                     onMouseEnter={(e) =>
@@ -3449,11 +4816,15 @@ function FinalSection() {
                     <p
                       style={{
                         margin: 0,
+
                         fontSize: "0.85rem",
+
                         fontWeight: 600,
+
                         color: isPlaying
                           ? "var(--primary)"
                           : "var(--foreground)",
+
                         letterSpacing: "0.02em",
                       }}
                     >
@@ -3464,7 +4835,9 @@ function FinalSection() {
                     <p
                       style={{
                         margin: 0,
+
                         fontSize: "0.7rem",
+
                         color: "var(--muted-foreground)",
                       }}
                     >
@@ -3477,18 +4850,26 @@ function FinalSection() {
                     <div
                       style={{
                         display: "flex",
+
                         alignItems: "flex-end",
+
                         gap: "3px",
+
                         height: "16px",
+
                         marginLeft: "6px",
                       }}
                     >
                       <span
                         style={{
                           width: "3px",
+
                           height: "100%",
+
                           background: "var(--primary)",
+
                           borderRadius: "2px",
+
                           animation:
                             "equalizer-bar 0.8s ease-in-out infinite alternate",
                         }}
@@ -3496,9 +4877,13 @@ function FinalSection() {
                       <span
                         style={{
                           width: "3px",
+
                           height: "60%",
+
                           background: "var(--primary)",
+
                           borderRadius: "2px",
+
                           animation:
                             "equalizer-bar 1.1s ease-in-out 0.2s infinite alternate",
                         }}
@@ -3506,9 +4891,13 @@ function FinalSection() {
                       <span
                         style={{
                           width: "3px",
+
                           height: "85%",
+
                           background: "var(--primary)",
+
                           borderRadius: "2px",
+
                           animation:
                             "equalizer-bar 0.9s ease-in-out 0.4s infinite alternate",
                         }}
@@ -3522,12 +4911,19 @@ function FinalSection() {
               <div
                 style={{
                   display: "inline-flex",
+
                   alignItems: "center",
+
                   gap: "10px",
+
                   padding: "8px 24px",
+
                   borderRadius: "9999px",
+
                   background: "rgba(201, 168, 76, 0.15)",
+
                   border: "1px solid rgba(201, 168, 76, 0.4)",
+
                   marginBottom: "20px",
                 }}
               >
@@ -3536,8 +4932,11 @@ function FinalSection() {
                   className="shimmer-text"
                   style={{
                     fontFamily: "var(--font-display)",
+
                     fontSize: "1.25rem",
+
                     fontWeight: 600,
+
                     letterSpacing: "0.06em",
                   }}
                 >
@@ -3549,12 +4948,19 @@ function FinalSection() {
               <h2
                 style={{
                   fontFamily: "var(--font-display)",
+
                   fontSize: "clamp(2rem, 5vw, 3.2rem)",
+
                   fontWeight: 500,
+
                   fontStyle: "italic",
+
                   color: "#fff3cf",
+
                   margin: "0 0 8px",
+
                   lineHeight: 1.15,
+
                   textShadow: "0 0 25px rgba(201, 168, 76, 0.3)",
                 }}
               >
@@ -3563,10 +4969,15 @@ function FinalSection() {
               <p
                 style={{
                   fontFamily: "var(--font-body)",
+
                   fontSize: "0.75rem",
+
                   letterSpacing: "0.25em",
+
                   textTransform: "uppercase",
+
                   color: "var(--primary)",
+
                   marginBottom: "28px",
                 }}
               >
@@ -3578,12 +4989,18 @@ function FinalSection() {
                 <div
                   style={{
                     display: "inline-block",
+
                     position: "relative",
+
                     padding: "12px",
+
                     background:
                       "linear-gradient(145deg, #1d192a 0%, #120e1d 100%)",
+
                     borderRadius: "18px",
+
                     border: "1px solid rgba(201, 168, 76, 0.4)",
+
                     boxShadow:
                       "0 20px 50px rgba(0, 0, 0, 0.7), 0 0 35px rgba(201, 168, 76, 0.2)",
                   }}
@@ -3591,10 +5008,15 @@ function FinalSection() {
                   <div
                     style={{
                       width: "clamp(210px, 30vw, 280px)",
+
                       aspectRatio: "721/1280",
+
                       maxHeight: "420px",
+
                       borderRadius: "12px",
+
                       overflow: "hidden",
+
                       background: "#09080e",
                     }}
                   >
@@ -3603,8 +5025,11 @@ function FinalSection() {
                       alt="Muthe Mutharame"
                       style={{
                         width: "100%",
+
                         height: "100%",
+
                         objectFit: "cover",
+
                         transition: "transform 0.5s ease",
                       }}
                       onMouseEnter={(e) =>
@@ -3618,9 +5043,13 @@ function FinalSection() {
                   <p
                     style={{
                       fontFamily: "var(--font-hand)",
+
                       fontSize: "1.3rem",
+
                       color: "var(--primary)",
+
                       margin: "12px 0 4px",
+
                       textAlign: "center",
                     }}
                   >
@@ -3633,13 +5062,21 @@ function FinalSection() {
               <div
                 style={{
                   fontFamily: "var(--font-display)",
+
                   fontSize: "clamp(1.05rem, 2.2vw, 1.25rem)",
+
                   fontStyle: "italic",
+
                   fontWeight: 300,
+
                   lineHeight: 1.95,
+
                   color: "rgba(240, 234, 214, 0.9)",
+
                   textAlign: "center",
+
                   maxWidth: "600px",
+
                   margin: "0 auto 30px",
                 }}
               >
@@ -3658,8 +5095,11 @@ function FinalSection() {
                 <p
                   style={{
                     margin: "0 0 12px",
+
                     color: "#fff1bd",
+
                     fontWeight: 500,
+
                     fontSize: "clamp(1.15rem, 2.5vw, 1.4rem)",
                   }}
                 >
@@ -3671,7 +5111,9 @@ function FinalSection() {
                 <p
                   style={{
                     margin: "0",
+
                     color: "var(--primary)",
+
                     fontSize: "1rem",
                   }}
                 >
@@ -3684,9 +5126,13 @@ function FinalSection() {
               <div
                 style={{
                   display: "flex",
+
                   flexDirection: "column",
+
                   alignItems: "center",
+
                   gap: "10px",
+
                   marginTop: "15px",
                 }}
               >
@@ -3694,28 +5140,43 @@ function FinalSection() {
                   onClick={handleShowerLove}
                   style={{
                     display: "inline-flex",
+
                     alignItems: "center",
+
                     gap: "10px",
+
                     padding: "12px 28px",
+
                     borderRadius: "9999px",
+
                     background:
                       "linear-gradient(135deg, #c9a84c 0%, #e8c76b 100%)",
+
                     color: "#09080e",
+
                     fontWeight: 600,
+
                     fontSize: "0.9rem",
+
                     letterSpacing: "0.05em",
+
                     border: "none",
+
                     cursor: "pointer",
+
                     boxShadow: "0 4px 20px rgba(201, 168, 76, 0.4)",
+
                     transition: "all 0.25s ease",
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = "scale(1.05)"
+
                     e.currentTarget.style.boxShadow =
                       "0 6px 28px rgba(201, 168, 76, 0.6)"
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = "scale(1)"
+
                     e.currentTarget.style.boxShadow =
                       "0 4px 20px rgba(201, 168, 76, 0.4)"
                   }}
@@ -3729,8 +5190,11 @@ function FinalSection() {
                   <p
                     style={{
                       fontFamily: "var(--font-hand)",
+
                       fontSize: "1.15rem",
+
                       color: "var(--primary)",
+
                       margin: 0,
                     }}
                   >
@@ -3743,11 +5207,17 @@ function FinalSection() {
             <div
               style={{
                 fontFamily: "var(--font-display)",
+
                 fontSize: "clamp(1rem, 2vw, 1.2rem)",
+
                 fontStyle: "italic",
+
                 fontWeight: 300,
+
                 lineHeight: 2,
+
                 color: "rgba(240,234,214,0.7)",
+
                 marginBottom: "40px",
               }}
             >
@@ -3769,8 +5239,11 @@ function FinalSection() {
             <p
               style={{
                 fontFamily: "var(--font-hand)",
+
                 fontSize: "clamp(1.4rem, 3.5vw, 2rem)",
+
                 color: "var(--primary)",
+
                 lineHeight: 1.6,
               }}
             >
@@ -3781,20 +5254,29 @@ function FinalSection() {
             <div
               style={{
                 marginTop: "50px",
+
                 height: "1px",
+
                 width: "120px",
+
                 background:
                   "linear-gradient(to right, transparent, rgba(201,168,76,0.4), transparent)",
+
                 margin: "50px auto 0",
               }}
             />
             <p
               style={{
                 fontFamily: "var(--font-body)",
+
                 fontSize: "0.7rem",
+
                 letterSpacing: "0.2em",
+
                 textTransform: "uppercase",
+
                 color: "var(--muted-foreground)",
+
                 marginTop: "20px",
               }}
             >
@@ -3808,12 +5290,17 @@ function FinalSection() {
 }
 
 // ─── Nav ──────────────────────────────────────────────────────────────────────
+
 // ─── Nav ──────────────────────────────────────────────────────────────────────
+
 function Nav() {
   const [scrolled, setScrolled] = useState(false)
+
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 60)
+
     window.addEventListener("scroll", handler)
+
     return () => window.removeEventListener("scroll", handler)
   }, [])
 
@@ -3825,27 +5312,42 @@ function Nav() {
     <nav
       style={{
         position: "fixed",
+
         top: 0,
+
         left: 0,
+
         right: 0,
+
         zIndex: 100,
+
         padding: "14px 28px",
+
         display: "flex",
+
         alignItems: "center",
+
         justifyContent: "space-between",
+
         background: scrolled ? "rgba(9,8,14,0.92)" : "rgba(9,8,14,0.4)",
+
         backdropFilter: "blur(14px)",
+
         borderBottom: scrolled
           ? "1px solid rgba(201,168,76,0.18)"
           : "1px solid transparent",
+
         transition: "all 0.4s ease",
       }}
     >
       <div
         style={{
           display: "flex",
+
           alignItems: "center",
+
           gap: "12px",
+
           cursor: "pointer",
         }}
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
@@ -3853,9 +5355,13 @@ function Nav() {
         <span
           style={{
             fontFamily: "var(--font-display)",
+
             fontSize: "1.1rem",
+
             fontStyle: "italic",
+
             color: "var(--primary)",
+
             letterSpacing: "0.05em",
           }}
         >
@@ -3864,11 +5370,17 @@ function Nav() {
         <span
           style={{
             fontFamily: "var(--font-body)",
+
             fontSize: "0.65rem",
+
             letterSpacing: "0.2em",
+
             textTransform: "uppercase",
+
             color: "var(--muted-foreground)",
+
             borderLeft: "1px solid var(--border)",
+
             paddingLeft: "10px",
           }}
         >
@@ -3879,8 +5391,11 @@ function Nav() {
       <div
         style={{
           display: "flex",
+
           alignItems: "center",
+
           gap: "clamp(10px, 2vw, 24px)",
+
           flexWrap: "wrap",
         }}
       >
@@ -3888,12 +5403,19 @@ function Nav() {
           onClick={() => scrollTo("beginning")}
           style={{
             background: "none",
+
             border: "none",
+
             color: "var(--muted-foreground)",
+
             fontSize: "0.75rem",
+
             letterSpacing: "0.1em",
+
             textTransform: "uppercase",
+
             cursor: "pointer",
+
             transition: "color 0.2s",
           }}
           onMouseEnter={(e) =>
@@ -3909,12 +5431,19 @@ function Nav() {
           onClick={() => scrollTo("timeline")}
           style={{
             background: "none",
+
             border: "none",
+
             color: "var(--muted-foreground)",
+
             fontSize: "0.75rem",
+
             letterSpacing: "0.1em",
+
             textTransform: "uppercase",
+
             cursor: "pointer",
+
             transition: "color 0.2s",
           }}
           onMouseEnter={(e) =>
@@ -3930,23 +5459,35 @@ function Nav() {
           onClick={() => scrollTo("monthly-vault")}
           style={{
             background: "rgba(201,168,76,0.12)",
+
             border: "1px solid rgba(201,168,76,0.4)",
+
             color: "var(--primary)",
+
             padding: "4px 12px",
+
             borderRadius: "9999px",
+
             fontSize: "0.75rem",
+
             letterSpacing: "0.1em",
+
             textTransform: "uppercase",
+
             cursor: "pointer",
+
             transition: "all 0.2s",
+
             fontWeight: 500,
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = "var(--primary)"
+
             e.currentTarget.style.color = "#09080e"
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.background = "rgba(201,168,76,0.12)"
+
             e.currentTarget.style.color = "var(--primary)"
           }}
         >
@@ -3956,12 +5497,19 @@ function Nav() {
           onClick={() => scrollTo("places")}
           style={{
             background: "none",
+
             border: "none",
+
             color: "var(--muted-foreground)",
+
             fontSize: "0.75rem",
+
             letterSpacing: "0.1em",
+
             textTransform: "uppercase",
+
             cursor: "pointer",
+
             transition: "color 0.2s",
           }}
           onMouseEnter={(e) =>
@@ -3977,12 +5525,19 @@ function Nav() {
           onClick={() => scrollTo("photowall")}
           style={{
             background: "none",
+
             border: "none",
+
             color: "var(--muted-foreground)",
+
             fontSize: "0.75rem",
+
             letterSpacing: "0.1em",
+
             textTransform: "uppercase",
+
             cursor: "pointer",
+
             transition: "color 0.2s",
           }}
           onMouseEnter={(e) =>
@@ -3998,23 +5553,35 @@ function Nav() {
           onClick={() => scrollTo("gift-hunt")}
           style={{
             background: "rgba(201,168,76,0.18)",
+
             border: "1px solid rgba(201,168,76,0.5)",
+
             color: "var(--primary)",
+
             padding: "4px 12px",
+
             borderRadius: "9999px",
+
             fontSize: "0.75rem",
+
             letterSpacing: "0.1em",
+
             textTransform: "uppercase",
+
             cursor: "pointer",
+
             transition: "all 0.2s",
+
             fontWeight: 600,
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = "var(--primary)"
+
             e.currentTarget.style.color = "#09080e"
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.background = "rgba(201,168,76,0.18)"
+
             e.currentTarget.style.color = "var(--primary)"
           }}
         >
@@ -4024,12 +5591,19 @@ function Nav() {
           onClick={() => scrollTo("letter")}
           style={{
             background: "none",
+
             border: "none",
+
             color: "var(--muted-foreground)",
+
             fontSize: "0.75rem",
+
             letterSpacing: "0.1em",
+
             textTransform: "uppercase",
+
             cursor: "pointer",
+
             transition: "color 0.2s",
           }}
           onMouseEnter={(e) =>
@@ -4045,12 +5619,19 @@ function Nav() {
           onClick={() => scrollTo("climax")}
           style={{
             background: "none",
+
             border: "none",
+
             color: "var(--primary)",
+
             fontSize: "0.75rem",
+
             letterSpacing: "0.1em",
+
             textTransform: "uppercase",
+
             cursor: "pointer",
+
             opacity: 0.9,
           }}
         >
@@ -4062,15 +5643,20 @@ function Nav() {
 }
 
 // ─── App ──────────────────────────────────────────────────────────────────────
+
 export default function App() {
   const [, setStarted] = useState(false)
+
   const mainRef = useRef<HTMLDivElement>(null)
 
   const handleStart = useCallback(() => {
     setStarted(true)
+
     setTimeout(() => {
       document
+
         .getElementById("beginning")
+
         ?.scrollIntoView({ behavior: "smooth" })
     }, 100)
   }, [])
