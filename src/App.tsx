@@ -6267,6 +6267,60 @@ function CountdownGate({ onUnlock }: { onUnlock: () => void }) {
               🥂 Cheers to Twenty! 👑
             </h2>
 
+            {/* Photo Card in Happy Bday Panda Card */}
+            <div
+              style={{
+                display: "inline-block",
+                position: "relative",
+                padding: "10px",
+                background: "linear-gradient(145deg, #1d192a 0%, #120e1d 100%)",
+                borderRadius: "18px",
+                border: "1.5px solid rgba(201, 168, 76, 0.5)",
+                boxShadow:
+                  "0 20px 50px rgba(0, 0, 0, 0.8), 0 0 35px rgba(201, 168, 76, 0.3)",
+                margin: "0 auto 28px",
+              }}
+            >
+              <div
+                style={{
+                  width: "clamp(280px, 82vw, 460px)",
+                  aspectRatio: "16/9",
+                  maxHeight: "320px",
+                  borderRadius: "12px",
+                  overflow: "hidden",
+                  background: "#09080e",
+                }}
+              >
+                <img
+                  src="/media/pics/pic_muthe_mutharame.jpg"
+                  alt="Happie Bday Panda"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    transition: "transform 0.5s ease",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.transform = "scale(1.04)")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.transform = "scale(1)")
+                  }
+                />
+              </div>
+              <p
+                style={{
+                  fontFamily: "var(--font-hand)",
+                  fontSize: "1.2rem",
+                  color: "var(--primary)",
+                  margin: "10px 0 2px",
+                  textAlign: "center",
+                }}
+              >
+                Muthe Mutharame ✦ Always My Favorite Person
+              </p>
+            </div>
+
             <p
               style={{
                 fontFamily: "var(--font-hand)",
