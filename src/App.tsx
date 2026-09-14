@@ -4427,8 +4427,15 @@ function FinalSection() {
     }
   })
 
-  // Always show countdown by default if before 12:00 AM midnight
+  // Strictly display countdown until timer cools down (reaches 12:00 AM)
+  // Optional query param (?preview=true) available for testing
   const [revealed, setRevealed] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const params = new URLSearchParams(window.location.search)
+        if (params.get("preview") === "true") return true
+      } catch {}
+    }
     return Date.now() >= targetTime
   })
 
@@ -4844,54 +4851,47 @@ function FinalSection() {
               </div>
             </div>
 
-            {/* Live pulsing tag */}
+            {/* Live locked status banner */}
             <p
               style={{
                 fontFamily: "var(--font-body)",
-                fontSize: "0.8rem",
+                fontSize: "0.82rem",
                 letterSpacing: "0.15em",
                 textTransform: "uppercase",
                 color: "var(--muted-foreground)",
-                marginBottom: "28px",
+                marginBottom: "20px",
               }}
             >
               🕛 Automatically reveals when the clock strikes 12:00 AM
             </p>
 
-            {/* Instant Preview / Reveal Button */}
-            <button
-              onClick={handleRevealNow}
+            {/* Countdown Locked Status Badge - Displayed strictly until timer cools down */}
+            <div
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: "10px",
-                padding: "16px 36px",
+                gap: "12px",
+                padding: "14px 32px",
                 borderRadius: "9999px",
-                background: "linear-gradient(135deg, #c9a84c 0%, #e8c76b 100%)",
-                color: "#09080e",
-                fontWeight: 700,
-                fontSize: "1.05rem",
-                letterSpacing: "0.05em",
-                border: "none",
-                cursor: "pointer",
-                boxShadow: "0 8px 30px rgba(201, 168, 76, 0.4)",
-                transition: "all 0.25s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "scale(1.05)"
-                e.currentTarget.style.boxShadow =
-                  "0 12px 35px rgba(201, 168, 76, 0.6)"
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "scale(1)"
-                e.currentTarget.style.boxShadow =
-                  "0 8px 30px rgba(201, 168, 76, 0.4)"
+                background: "rgba(201, 168, 76, 0.08)",
+                border: "1.5px solid rgba(201, 168, 76, 0.35)",
+                boxShadow: "0 8px 30px rgba(0, 0, 0, 0.4)",
               }}
             >
-              <span>✨</span>
-              <span>Reveal 12:00 AM Celebration Now</span>
-              <span>🐼</span>
-            </button>
+              <span style={{ fontSize: "1.2rem" }}>🔒</span>
+              <span
+                style={{
+                  fontFamily: "var(--font-display)",
+                  color: "var(--primary)",
+                  fontSize: "1rem",
+                  fontWeight: 600,
+                  letterSpacing: "0.06em",
+                }}
+              >
+                Locked · Unlocks Automatically at 12:00 AM Midnight
+              </span>
+              <span style={{ fontSize: "1.1rem" }}>✨</span>
+            </div>
           </div>
         ) : (
           /* ─── STATE 2: The Grand 12:00 AM Birthday Reveal ─── */
