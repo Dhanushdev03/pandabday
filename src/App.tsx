@@ -428,14 +428,44 @@ function HeroSection({ onStart }: { onStart: () => void }) {
             >
               Start Our Journey →
             </button>
+            <button
+              onClick={() => {
+                document
+                  .getElementById("climax")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "8px 22px",
+                borderRadius: "9999px",
+                background: "rgba(201, 168, 76, 0.14)",
+                border: "1px solid rgba(201, 168, 76, 0.45)",
+                color: "var(--primary)",
+                fontFamily: "var(--font-display)",
+                fontSize: "0.95rem",
+                fontWeight: 500,
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(201, 168, 76, 0.25)"
+                e.currentTarget.style.transform = "scale(1.03)"
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "rgba(201, 168, 76, 0.14)"
+                e.currentTarget.style.transform = "scale(1)"
+              }}
+            >
+              <span>⏳</span>
+              <span>12:00 AM Birthday Countdown →</span>
+            </button>
             <p
               style={{
                 fontFamily: "var(--font-hand)",
-
                 fontSize: "1.1rem",
-
                 color: "var(--muted-foreground)",
-
                 letterSpacing: "0.02em",
               }}
             >
@@ -4370,19 +4400,21 @@ function LetterSection() {
 
 // ─── Section 11 — The Final 12:00 AM Countdown & Celebration ──────────────────
 function getNextMidnight(): number {
-  const d = new Date()
-  d.setHours(24, 0, 0, 0)
-  return d.getTime()
+  const now = new Date()
+  const midnight = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + 1,
+    0,
+    0,
+    0,
+    0,
+  )
+  return midnight.getTime()
 }
 
 function FinalSection() {
-  const [targetTime] = useState<number>(() => {
-    try {
-      const saved = localStorage.getItem("panda_bday_countdown_target")
-      if (saved) return parseInt(saved, 10)
-    } catch {}
-    return getNextMidnight()
-  })
+  const [targetTime] = useState<number>(() => getNextMidnight())
 
   const [timeLeft, setTimeLeft] = useState(() => {
     const diff = targetTime - Date.now()
@@ -4395,13 +4427,18 @@ function FinalSection() {
     }
   })
 
+  // Always show countdown by default if before 12:00 AM midnight
   const [revealed, setRevealed] = useState<boolean>(() => {
-    try {
-      const saved = localStorage.getItem("panda_bday_revealed")
-      if (saved !== null) return saved === "true"
-    } catch {}
-    return targetTime <= Date.now()
+    return Date.now() >= targetTime
   })
+
+  // Clear any stale localStorage keys on mount so countdown is never blocked
+  useEffect(() => {
+    try {
+      localStorage.removeItem("panda_bday_revealed")
+      localStorage.removeItem("panda_bday_countdown_target")
+    } catch {}
+  }, [])
 
   const [blessingCount, setBlessingCount] = useState(365)
   const [floatingHearts, setFloatingHearts] = useState<Array<{
@@ -4429,9 +4466,6 @@ function FinalSection() {
           isOver: true,
         })
         setRevealed(true)
-        try {
-          localStorage.setItem("panda_bday_revealed", "true")
-        } catch {}
       } else {
         setTimeLeft({
           days: Math.floor(diff / (1000 * 60 * 60 * 24)),
@@ -4462,16 +4496,10 @@ function FinalSection() {
 
   const handleRevealNow = () => {
     setRevealed(true)
-    try {
-      localStorage.setItem("panda_bday_revealed", "true")
-    } catch {}
   }
 
   const handleShowCountdown = () => {
     setRevealed(false)
-    try {
-      localStorage.setItem("panda_bday_revealed", "false")
-    } catch {}
   }
 
   const toggleMusic = () => {
