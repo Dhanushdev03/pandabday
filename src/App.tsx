@@ -2976,71 +2976,70 @@ interface GiftClue {
 const DEFAULT_GIFT_CLUES: GiftClue[] = [
   {
     id: 1,
-
     giftNum: 1,
-
     title: "Gift 01 · The Crisper 'Big Box' Secret",
-
     locationName: "Refrigerator · Lower 'Big Box' Drawer",
-
     hint: "Open the refrigerator door and glance down low into the fresh vegetable & fruit drawer...",
-
     roomHint:
       "Look right inside the 'Big Box' drawer where fresh fruits and green vegetables chill!",
-
     defaultImg: "/media/gifts/gift_fridge_bigbox.png",
-
     rewardTitle: "Gift #1 Discovered! 🍎",
-
     rewardMessage:
       "The quest has begun! You found the first treasure hidden in the fridge!",
   },
-
   {
     id: 2,
-
     giftNum: 2,
-
     title: "Gift 02 · The Sub-Zero Freezer Surprise",
-
     locationName: "Convertible Freezer · Movable Ice Maker Shelf",
-
     hint: "Brrr! It's getting even colder! Check inside the freezer compartment right near the ice maker...",
-
     roomHint:
       "Tucked right beside the movable ice maker and sweet treats... don't let your fingers freeze!",
-
     defaultImg: "/media/gifts/gift_freezer_ice.png",
-
     rewardTitle: "Gift #2 Unlocked! ❄️",
-
     rewardMessage:
-      "Chilled to perfection! You're an incredible detective. Now for the grand finale!",
+      "Chilled to perfection! You're an incredible detective. On to the next clue!",
   },
-
   {
     id: 3,
-
     giftNum: 3,
-
-    title: "Gift 03 · The Wardrobe Secret & The Gift Bag",
-
-    locationName: "Wardrobe Shelf · The White Quilted Gift Bag",
-
-    hint: "Head to your wardrobe where your favorite clothes rest. Look for the elegant white quilted bag tucked neatly among the clothes...",
-
+    title: "Gift 03 · The Denim & Hoodie Hideaway",
+    locationName: "Wardrobe / Clothes Stack · Between the Blue Hoodies & Denim",
+    hint: "Move from the kitchen to the clothes stack. Search where the warm blue hoodies and folded blue denim jeans are resting...",
     roomHint:
-      "Tucked on the shelf right under the clothes... there sits the beautiful white gift bag!",
-
-    defaultImg: "/media/gifts/gift_wardrobe_bag.png",
-
-    rewardTitle: "Grand Gift Bag & Bonus Unlocked! 👑🎁",
-
+      "Feel between the soft folds of your favorite blue jacket and denim jeans!",
+    defaultImg: "/media/gifts/gift_loc_denim.jpg",
+    rewardTitle: "Gift #3 Discovered! 👖✨",
     rewardMessage:
-      "Happy Birthday, Muthe Mutharame! You found the gift bag! Open the zip for your bonus surprise!",
-
+      "Cozy and stylish! You pulled the surprise right from between the denim folds!",
+  },
+  {
+    id: 4,
+    giftNum: 4,
+    title: "Gift 04 · The Blinkit Delivery Shelf Mystery",
+    locationName: "Storage Shelf · Behind the Brown Blinkit Bag",
+    hint: "Time to search the shelves! Look near the essentials and medicine boxes, right where the brown Blinkit grocery bag stands...",
+    roomHint:
+      "Tucked on the storage shelf beside the daily essentials and the Blinkit paper cover!",
+    defaultImg: "/media/gifts/gift_loc_blinkit.jpg",
+    rewardTitle: "Gift #4 Unlocked! 🛍️📦",
+    rewardMessage:
+      "Delivered with love in 10 minutes! Only one grand finale gift remains to be found!",
+  },
+  {
+    id: 5,
+    giftNum: 5,
+    title: "Gift 05 · The Final Wardrobe Secret & Quilted Purse",
+    locationName: "Wardrobe Shelf · The White Quilted Handbag & Gift Bag",
+    hint: "Head to your wardrobe where your favorite outfits hang. Look closely for the elegant white quilted purse tucked neatly on the shelf...",
+    roomHint:
+      "Tucked on the shelf right under the clothes... there sits the beautiful quilted purse & gift bag!",
+    defaultImg: "/media/gifts/gift_wardrobe_bag.png",
+    rewardTitle: "Grand Finale Purse & Secret Bonus Unlocked! 👑🎁",
+    rewardMessage:
+      "Happy Birthday, Muthe Mutharame! You conquered all 5 clues! Open the zipper of the purse for your secret bonus!",
     bonusNote:
-      "✨ BONUS INSIDE THE BAG: Don't forget to open the zipper and look inside the handbag for your secret surprise bonus!",
+      "✨ BONUS INSIDE THE PURSE: Don't forget to unzip the white quilted purse and check inside for your secret surprise bonus!",
   },
 ]
 
@@ -3050,19 +3049,18 @@ function GiftHuntSection() {
   const [foundList, setFoundList] = useState<boolean[]>(() => {
     try {
       const saved = localStorage.getItem("panda_gift_hunt_found")
-
       if (saved) {
         const parsed = JSON.parse(saved)
-
         if (
           Array.isArray(parsed) &&
           parsed.length === DEFAULT_GIFT_CLUES.length
         ) {
           return parsed
+        } else {
+          localStorage.removeItem("panda_gift_hunt_found")
         }
       }
     } catch {}
-
     return new Array(DEFAULT_GIFT_CLUES.length).fill(false)
   })
 
