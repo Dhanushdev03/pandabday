@@ -4368,136 +4368,146 @@ function LetterSection() {
   )
 }
 
-// ─── Section 11 — The Final 12:00 AM Moment ──────────────────────────────────
+// ─── Section 11 — The Final 12:00 AM Countdown & Celebration ──────────────────
+function getNextMidnight(): number {
+  const d = new Date()
+  d.setHours(24, 0, 0, 0)
+  return d.getTime()
+}
 
 function FinalSection() {
-  const [clockStep, setClockStep] = useState(0)
+  const [targetTime] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem("panda_bday_countdown_target")
+      if (saved) return parseInt(saved, 10)
+    } catch {}
+    return getNextMidnight()
+  })
 
-  const [revealed, setRevealed] = useState(false)
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const diff = targetTime - Date.now()
+    return {
+      days: Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24))),
+      hours: Math.max(0, Math.floor((diff / (1000 * 60 * 60)) % 24)),
+      minutes: Math.max(0, Math.floor((diff / (1000 * 60)) % 60)),
+      seconds: Math.max(0, Math.floor((diff / 1000) % 60)),
+      isOver: diff <= 0,
+    }
+  })
+
+  const [revealed, setRevealed] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem("panda_bday_revealed")
+      if (saved !== null) return saved === "true"
+    } catch {}
+    return targetTime <= Date.now()
+  })
 
   const [blessingCount, setBlessingCount] = useState(365)
-
   const [floatingHearts, setFloatingHearts] = useState<Array<{
     id: number
-
     tx: number
-
     ty: number
-
     emoji: string
-
     left: number
   }>>([])
 
   const audioRef = useRef<HTMLAudioElement>(null)
-
   const [isPlaying, setIsPlaying] = useState(false)
-
   const sectionRef = useRef<HTMLElement>(null)
 
-  const triggered = useRef(false)
-
+  // Live timer tick every 1000ms
   useEffect(() => {
-    const el = sectionRef.current
-
-    if (!el) return
-
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !triggered.current) {
-          triggered.current = true
-
-          const t1 = setTimeout(() => setClockStep(1), 600)
-
-          const t2 = setTimeout(() => setClockStep(2), 2400)
-
-          const t3 = setTimeout(() => setClockStep(3), 3600)
-
-          const t4 = setTimeout(() => setRevealed(true), 5200)
-
-          return () => [t1, t2, t3, t4].forEach(clearTimeout)
-        }
-      },
-
-      { threshold: 0.3 },
-    )
-
-    obs.observe(el)
-
-    return () => obs.disconnect()
-  }, [])
+    const timer = setInterval(() => {
+      const diff = targetTime - Date.now()
+      if (diff <= 0) {
+        setTimeLeft({
+          days: 0,
+          hours: 0,
+          minutes: 0,
+          seconds: 0,
+          isOver: true,
+        })
+        setRevealed(true)
+        try {
+          localStorage.setItem("panda_bday_revealed", "true")
+        } catch {}
+      } else {
+        setTimeLeft({
+          days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((diff / (1000 * 60)) % 60),
+          seconds: Math.floor((diff / 1000) % 60),
+          isOver: false,
+        })
+      }
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [targetTime])
 
   // Autoplay Muthe Mutharame song when revealed
-
   useEffect(() => {
     if (revealed && audioRef.current) {
       audioRef.current.volume = 0.85
-
       const playPromise = audioRef.current.play()
-
       if (playPromise !== undefined) {
         playPromise
-
           .then(() => setIsPlaying(true))
-
           .catch((err) => {
-            console.log("Audio autoplay waiting for user interaction:", err)
+            console.log("Audio autoplay waiting for interaction:", err)
           })
       }
     }
   }, [revealed])
 
+  const handleRevealNow = () => {
+    setRevealed(true)
+    try {
+      localStorage.setItem("panda_bday_revealed", "true")
+    } catch {}
+  }
+
+  const handleShowCountdown = () => {
+    setRevealed(false)
+    try {
+      localStorage.setItem("panda_bday_revealed", "false")
+    } catch {}
+  }
+
   const toggleMusic = () => {
     if (!audioRef.current) return
-
     if (isPlaying) {
       audioRef.current.pause()
-
       setIsPlaying(false)
     } else {
       audioRef.current.volume = 0.85
-
       audioRef.current
-
         .play()
-
         .then(() => setIsPlaying(true))
-
         .catch((e) => console.error(e))
     }
   }
 
   const handleShowerLove = () => {
     setBlessingCount((prev) => prev + 1)
-
     if (audioRef.current && audioRef.current.paused) {
       audioRef.current.volume = 0.85
-
       audioRef.current
-
         .play()
-
         .then(() => setIsPlaying(true))
-
         .catch(() => {})
     }
 
-    const emojis = ["💖", "❤️", "✨", "🌸", "⭐", "💎", "💐"]
-
-    const newHearts = Array.from({ length: 9 }).map((_, i) => ({
+    const emojis = ["💖", "❤️", "✨", "🌸", "⭐", "💎", "💐", "🐼", "🥂"]
+    const newHearts = Array.from({ length: 12 }).map((_, i) => ({
       id: Date.now() + i,
-
-      tx: (Math.random() - 0.5) * 260,
-
-      ty: -140 - Math.random() * 180,
-
+      tx: (Math.random() - 0.5) * 280,
+      ty: -140 - Math.random() * 200,
       emoji: emojis[Math.floor(Math.random() * emojis.length)],
-
       left: 35 + Math.random() * 30,
     }))
 
     setFloatingHearts((prev) => [...prev, ...newHearts])
-
     setTimeout(() => {
       setFloatingHearts((prev) => prev.slice(newHearts.length))
     }, 2000)
@@ -4509,261 +4519,484 @@ function FinalSection() {
       ref={sectionRef}
       style={{
         minHeight: "100vh",
-
         display: "flex",
-
         flexDirection: "column",
-
         alignItems: "center",
-
         justifyContent: "center",
-
         textAlign: "center",
-
         padding: "clamp(60px,10vw,120px) clamp(20px,8vw,80px)",
-
         background: revealed
-          ? "radial-gradient(ellipse at 50% 40%, #1a120a 0%, #09080e 60%)"
-          : "#09080e",
-
-        transition: "background 2s ease",
-
+          ? "radial-gradient(ellipse at 50% 35%, #22170d 0%, #0d0a14 50%, #07060a 100%)"
+          : "radial-gradient(ellipse at 50% 35%, #151122 0%, #09080e 70%)",
+        transition: "background 1.5s ease",
         position: "relative",
       }}
     >
-      {/* Ambient glow on reveal */}
+      {/* Ambient background glow on reveal */}
       {revealed && (
         <div
           style={{
             position: "absolute",
-
             top: "30%",
-
             left: "50%",
-
             transform: "translate(-50%,-50%)",
-
             width: "800px",
-
             height: "800px",
-
             borderRadius: "50%",
-
             background:
-              "radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 70%)",
-
+              "radial-gradient(circle, rgba(201,168,76,0.18) 0%, transparent 70%)",
             pointerEvents: "none",
-
-            animation: "fadeIn 3s ease",
+            animation: "fadeIn 2.5s ease",
           }}
         />
       )}
 
-      <div style={{ position: "relative", zIndex: 1, maxWidth: "760px" }}>
-        {/* Clock */}
-        {!revealed && (
+      {/* Hidden audio element for Muthe Mutharame */}
+      <audio
+        ref={audioRef}
+        src="/media/audio/song_muthe_mutharame.mp3"
+        preload="auto"
+        loop
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+      />
+
+      <div style={{ position: "relative", zIndex: 1, maxWidth: "840px" }}>
+        {/* ─── STATE 1: Wonderful Live Countdown to 12:00 AM ─── */}
+        {!revealed ? (
           <div
             style={{
-              marginBottom: "60px",
-
-              fontFamily: "var(--font-display)",
-
-              fontWeight: 300,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
             }}
           >
+            {/* Top Pill Badge */}
             <div
               style={{
-                fontSize: "clamp(3rem, 10vw, 6rem)",
-
-                color: "rgba(240,234,214,0.15)",
-
-                letterSpacing: "0.1em",
-
-                transition: "all 0.8s ease",
-
-                animation: clockStep > 0 ? "clock-tick 0.5s ease" : "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "8px 24px",
+                borderRadius: "9999px",
+                background: "rgba(201, 168, 76, 0.15)",
+                border: "1px solid rgba(201, 168, 76, 0.4)",
+                marginBottom: "24px",
               }}
             >
-              {clockStep === 0 && "——:——"}
-              {clockStep === 1 && "11:59 PM"}
-              {clockStep === 2 && "11:59:58"}
-              {clockStep === 3 && (
-                <span style={{ color: "var(--primary)" }}>12:00 AM</span>
-              )}
+              <span>⏳</span>
+              <span
+                className="shimmer-text"
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: "1.05rem",
+                  fontWeight: 600,
+                  letterSpacing: "0.08em",
+                }}
+              >
+                Countdown to 12:00 AM · Midnight Reveal
+              </span>
+              <span>✦</span>
             </div>
-          </div>
-        )}
 
-        {revealed && (
-          <div style={{ animation: "golden-reveal 2s ease forwards" }}>
+            <h2
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "clamp(2.4rem, 6vw, 4.5rem)",
+                fontWeight: 500,
+                fontStyle: "italic",
+                color: "var(--foreground)",
+                margin: "0 0 14px",
+                lineHeight: 1.15,
+              }}
+            >
+              Counting Down To Your Birthday
+            </h2>
+
+            <p
+              style={{
+                fontFamily: "var(--font-hand)",
+                fontSize: "clamp(1.2rem, 2.5vw, 1.5rem)",
+                color: "var(--primary)",
+                maxWidth: "600px",
+                margin: "0 auto 36px",
+                lineHeight: 1.5,
+              }}
+            >
+              "The clock is ticking towards 12:00 AM... A magical milestone is
+              about to unlock for Panda."
+            </p>
+
+            {/* Countdown Grid (Days, Hours, Minutes, Seconds) */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "clamp(10px, 3vw, 20px)",
+                marginBottom: "40px",
+                flexWrap: "wrap",
+              }}
+            >
+              {/* Days (if > 0) */}
+              {timeLeft.days > 0 && (
+                <>
+                  <div
+                    style={{
+                      background: "rgba(25, 20, 32, 0.85)",
+                      border: "1.5px solid rgba(201, 168, 76, 0.4)",
+                      borderRadius: "18px",
+                      padding: "clamp(16px, 3vw, 28px) clamp(16px, 3vw, 24px)",
+                      minWidth: "clamp(85px, 16vw, 120px)",
+                      boxShadow: "0 10px 30px rgba(0, 0, 0, 0.6)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontFamily: "var(--font-display)",
+                        fontSize: "clamp(2.4rem, 6vw, 4.2rem)",
+                        fontWeight: 600,
+                        color: "var(--primary)",
+                        lineHeight: 1,
+                      }}
+                    >
+                      {String(timeLeft.days).padStart(2, "0")}
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: "var(--font-body)",
+                        fontSize: "0.75rem",
+                        letterSpacing: "0.2em",
+                        textTransform: "uppercase",
+                        color: "var(--muted-foreground)",
+                        marginTop: "8px",
+                      }}
+                    >
+                      Days
+                    </div>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: "2rem",
+                      color: "rgba(201,168,76,0.6)",
+                      fontWeight: 300,
+                    }}
+                  >
+                    :
+                  </span>
+                </>
+              )}
+
+              {/* Hours */}
+              <div
+                style={{
+                  background: "rgba(25, 20, 32, 0.85)",
+                  border: "1.5px solid rgba(201, 168, 76, 0.4)",
+                  borderRadius: "18px",
+                  padding: "clamp(16px, 3vw, 28px) clamp(16px, 3vw, 24px)",
+                  minWidth: "clamp(85px, 16vw, 120px)",
+                  boxShadow: "0 10px 30px rgba(0, 0, 0, 0.6)",
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: "clamp(2.4rem, 6vw, 4.2rem)",
+                    fontWeight: 600,
+                    color: "var(--primary)",
+                    lineHeight: 1,
+                  }}
+                >
+                  {String(timeLeft.hours).padStart(2, "0")}
+                </div>
+                <div
+                  style={{
+                    fontFamily: "var(--font-body)",
+                    fontSize: "0.75rem",
+                    letterSpacing: "0.2em",
+                    textTransform: "uppercase",
+                    color: "var(--muted-foreground)",
+                    marginTop: "8px",
+                  }}
+                >
+                  Hours
+                </div>
+              </div>
+
+              <span
+                style={{
+                  fontSize: "2rem",
+                  color: "rgba(201,168,76,0.6)",
+                  fontWeight: 300,
+                }}
+              >
+                :
+              </span>
+
+              {/* Minutes */}
+              <div
+                style={{
+                  background: "rgba(25, 20, 32, 0.85)",
+                  border: "1.5px solid rgba(201, 168, 76, 0.4)",
+                  borderRadius: "18px",
+                  padding: "clamp(16px, 3vw, 28px) clamp(16px, 3vw, 24px)",
+                  minWidth: "clamp(85px, 16vw, 120px)",
+                  boxShadow: "0 10px 30px rgba(0, 0, 0, 0.6)",
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: "clamp(2.4rem, 6vw, 4.2rem)",
+                    fontWeight: 600,
+                    color: "var(--primary)",
+                    lineHeight: 1,
+                  }}
+                >
+                  {String(timeLeft.minutes).padStart(2, "0")}
+                </div>
+                <div
+                  style={{
+                    fontFamily: "var(--font-body)",
+                    fontSize: "0.75rem",
+                    letterSpacing: "0.2em",
+                    textTransform: "uppercase",
+                    color: "var(--muted-foreground)",
+                    marginTop: "8px",
+                  }}
+                >
+                  Minutes
+                </div>
+              </div>
+
+              <span
+                style={{
+                  fontSize: "2rem",
+                  color: "rgba(201,168,76,0.6)",
+                  fontWeight: 300,
+                }}
+              >
+                :
+              </span>
+
+              {/* Seconds */}
+              <div
+                style={{
+                  background: "rgba(25, 20, 32, 0.85)",
+                  border: "1.5px solid rgba(201, 168, 76, 0.6)",
+                  borderRadius: "18px",
+                  padding: "clamp(16px, 3vw, 28px) clamp(16px, 3vw, 24px)",
+                  minWidth: "clamp(85px, 16vw, 120px)",
+                  boxShadow: "0 0 25px rgba(201, 168, 76, 0.25)",
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: "clamp(2.4rem, 6vw, 4.2rem)",
+                    fontWeight: 600,
+                    color: "#fff3cf",
+                    lineHeight: 1,
+                  }}
+                >
+                  {String(timeLeft.seconds).padStart(2, "0")}
+                </div>
+                <div
+                  style={{
+                    fontFamily: "var(--font-body)",
+                    fontSize: "0.75rem",
+                    letterSpacing: "0.2em",
+                    textTransform: "uppercase",
+                    color: "var(--primary)",
+                    marginTop: "8px",
+                  }}
+                >
+                  Seconds
+                </div>
+              </div>
+            </div>
+
+            {/* Live pulsing tag */}
             <p
               style={{
                 fontFamily: "var(--font-body)",
-
-                fontSize: "0.75rem",
-
-                letterSpacing: "0.3em",
-
+                fontSize: "0.8rem",
+                letterSpacing: "0.15em",
                 textTransform: "uppercase",
+                color: "var(--muted-foreground)",
+                marginBottom: "28px",
+              }}
+            >
+              🕛 Automatically reveals when the clock strikes 12:00 AM
+            </p>
 
-                color: "var(--primary)",
+            {/* Instant Preview / Reveal Button */}
+            <button
+              onClick={handleRevealNow}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "16px 36px",
+                borderRadius: "9999px",
+                background: "linear-gradient(135deg, #c9a84c 0%, #e8c76b 100%)",
+                color: "#09080e",
+                fontWeight: 700,
+                fontSize: "1.05rem",
+                letterSpacing: "0.05em",
+                border: "none",
+                cursor: "pointer",
+                boxShadow: "0 8px 30px rgba(201, 168, 76, 0.4)",
+                transition: "all 0.25s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "scale(1.05)"
+                e.currentTarget.style.boxShadow =
+                  "0 12px 35px rgba(201, 168, 76, 0.6)"
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "scale(1)"
+                e.currentTarget.style.boxShadow =
+                  "0 8px 30px rgba(201, 168, 76, 0.4)"
+              }}
+            >
+              <span>✨</span>
+              <span>Reveal 12:00 AM Celebration Now</span>
+              <span>🐼</span>
+            </button>
+          </div>
+        ) : (
+          /* ─── STATE 2: The Grand 12:00 AM Birthday Reveal ─── */
+          <div style={{ animation: "golden-reveal 1.8s ease forwards" }}>
+            {/* Floating Hearts burst container */}
+            {floatingHearts.map((h) => (
+              <span
+                key={h.id}
+                style={{
+                  position: "absolute",
+                  bottom: "70px",
+                  left: `${h.left}%`,
+                  pointerEvents: "none",
+                  fontSize: "1.8rem",
+                  animation: "heart-burst 1.6s ease-out forwards",
+                  transform: `translate(${h.tx}px, ${h.ty}px)`,
+                  zIndex: 20,
+                }}
+              >
+                {h.emoji}
+              </span>
+            ))}
 
+            {/* Top Shimmer Milestone Badge */}
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "8px 24px",
+                borderRadius: "9999px",
+                background: "rgba(201, 168, 76, 0.18)",
+                border: "1px solid rgba(201, 168, 76, 0.5)",
                 marginBottom: "20px",
               }}
             >
-              "It's midnight. And this one's for you."
-            </p>
+              <span>🥂</span>
+              <span
+                className="shimmer-text"
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: "1.1rem",
+                  fontWeight: 600,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                }}
+              >
+                12:00 AM Midnight · Golden Milestone
+              </span>
+              <span>👑</span>
+            </div>
+
+            {/* Exact requested typography: "Happie Bday panda" */}
             <h1
               style={{
                 fontFamily: "var(--font-display)",
-
-                fontSize: "clamp(3rem, 10vw, 7rem)",
-
-                fontWeight: 600,
-
-                color: "var(--primary)",
-
-                margin: "0 0 20px",
-
-                lineHeight: 1,
-
-                letterSpacing: "-0.02em",
+                fontSize: "clamp(2.8rem, 8vw, 6.5rem)",
+                fontWeight: 700,
+                fontStyle: "italic",
+                background:
+                  "linear-gradient(135deg, #fff3cf 0%, #c9a84c 50%, #f3d88b 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                margin: "0 0 10px",
+                lineHeight: 1.05,
+                filter: "drop-shadow(0 0 35px rgba(201, 168, 76, 0.45))",
               }}
             >
-              HAPPY BIRTHDAY
+              Happie Bday panda 🐼✨
             </h1>
+
+            {/* Exact requested typography: "cheers to Twenty" */}
+            <h2
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "clamp(1.8rem, 5vw, 3.2rem)",
+                fontWeight: 600,
+                fontStyle: "italic",
+                color: "#ffffff",
+                margin: "0 0 24px",
+                textShadow: "0 0 25px rgba(201, 168, 76, 0.5)",
+                letterSpacing: "0.02em",
+              }}
+            >
+              🥂 Cheers to Twenty! 👑
+            </h2>
+
             <p
               style={{
-                fontFamily: "var(--font-display)",
-
-                fontSize: "clamp(1.5rem, 4vw, 2.5rem)",
-
-                fontStyle: "italic",
-
-                fontWeight: 300,
-
-                color: "var(--foreground)",
-
-                marginBottom: "40px",
+                fontFamily: "var(--font-hand)",
+                fontSize: "clamp(1.3rem, 3vw, 1.7rem)",
+                color: "var(--primary)",
+                margin: "0 0 36px",
               }}
             >
-              to my unexpected person.
+              "20 years of sunshine, laughter, fights, inside jokes, and being
+              the most special person in my life."
             </p>
-
-            <div
-              style={{
-                fontFamily: "var(--font-display)",
-
-                fontSize: "clamp(1rem, 2.2vw, 1.25rem)",
-
-                fontStyle: "italic",
-
-                fontWeight: 300,
-
-                lineHeight: 1.9,
-
-                color: "rgba(240,234,214,0.75)",
-
-                marginBottom: "40px",
-              }}
-            >
-              "Among all the wishes you receive tonight...
-              <br />I wanted mine to be something different.
-              <br />
-              <br />
-              Not just something you read.
-              <br />
-              <strong
-                style={{ color: "var(--foreground)", fontStyle: "normal" }}
-              >
-                Something you could revisit.
-              </strong>
-              "
-            </div>
 
             {/* ─── Grand Finale "Muthe Mutharame" Birthday Card ─── */}
             <div
               className="muthe-card"
               style={{
-                marginTop: "40px",
-
-                marginBottom: "50px",
-
+                marginTop: "20px",
+                marginBottom: "40px",
                 padding: "clamp(28px, 5vw, 48px) clamp(18px, 4vw, 36px)",
-
                 position: "relative",
               }}
             >
-              {/* Floating Hearts burst container */}
-              {floatingHearts.map((h) => (
-                <span
-                  key={h.id}
-                  style={{
-                    position: "absolute",
-
-                    bottom: "70px",
-
-                    left: `${h.left}%`,
-
-                    pointerEvents: "none",
-
-                    fontSize: "1.8rem",
-
-                    animation: "heart-burst 1.6s ease-out forwards",
-
-                    transform: `translate(${h.tx}px, ${h.ty}px)`,
-
-                    zIndex: 20,
-                  }}
-                >
-                  {h.emoji}
-                </span>
-              ))}
-
-              {/* Hidden audio element */}
-              <audio
-                ref={audioRef}
-                src="/media/audio/song_muthe_mutharame.mp3"
-                preload="auto"
-                loop
-                onPlay={() => setIsPlaying(true)}
-                onPause={() => setIsPlaying(false)}
-              />
-
               {/* Floating Music Controller Bar */}
               <div
                 style={{
                   display: "flex",
-
                   justifyContent: "center",
-
-                  marginBottom: "20px",
+                  marginBottom: "22px",
                 }}
               >
                 <div
                   style={{
                     display: "inline-flex",
-
                     alignItems: "center",
-
                     gap: "12px",
-
                     padding: "8px 22px",
-
                     borderRadius: "9999px",
-
                     background: isPlaying
                       ? "rgba(201, 168, 76, 0.22)"
                       : "rgba(255, 255, 255, 0.08)",
-
                     border: `1px solid ${
                       isPlaying ? "var(--primary)" : "rgba(201, 168, 76, 0.35)"
                     }`,
-
                     boxShadow: isPlaying
                       ? "0 0 25px rgba(201, 168, 76, 0.35)"
                       : "none",
-
                     transition: "all 0.3s ease",
                   }}
                 >
@@ -4771,31 +5004,18 @@ function FinalSection() {
                     onClick={toggleMusic}
                     style={{
                       background: "var(--primary)",
-
                       color: "#09080e",
-
                       border: "none",
-
                       width: "32px",
-
                       height: "32px",
-
                       borderRadius: "50%",
-
                       display: "flex",
-
                       alignItems: "center",
-
                       justifyContent: "center",
-
                       cursor: "pointer",
-
                       fontSize: "0.85rem",
-
                       fontWeight: "bold",
-
                       boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
-
                       transition: "transform 0.2s ease",
                     }}
                     onMouseEnter={(e) =>
@@ -4816,15 +5036,11 @@ function FinalSection() {
                     <p
                       style={{
                         margin: 0,
-
                         fontSize: "0.85rem",
-
                         fontWeight: 600,
-
                         color: isPlaying
                           ? "var(--primary)"
                           : "var(--foreground)",
-
                         letterSpacing: "0.02em",
                       }}
                     >
@@ -4835,9 +5051,7 @@ function FinalSection() {
                     <p
                       style={{
                         margin: 0,
-
                         fontSize: "0.7rem",
-
                         color: "var(--muted-foreground)",
                       }}
                     >
@@ -4850,26 +5064,18 @@ function FinalSection() {
                     <div
                       style={{
                         display: "flex",
-
                         alignItems: "flex-end",
-
                         gap: "3px",
-
                         height: "16px",
-
                         marginLeft: "6px",
                       }}
                     >
                       <span
                         style={{
                           width: "3px",
-
                           height: "100%",
-
                           background: "var(--primary)",
-
                           borderRadius: "2px",
-
                           animation:
                             "equalizer-bar 0.8s ease-in-out infinite alternate",
                         }}
@@ -4877,13 +5083,9 @@ function FinalSection() {
                       <span
                         style={{
                           width: "3px",
-
                           height: "60%",
-
                           background: "var(--primary)",
-
                           borderRadius: "2px",
-
                           animation:
                             "equalizer-bar 1.1s ease-in-out 0.2s infinite alternate",
                         }}
@@ -4891,13 +5093,9 @@ function FinalSection() {
                       <span
                         style={{
                           width: "3px",
-
                           height: "85%",
-
                           background: "var(--primary)",
-
                           borderRadius: "2px",
-
                           animation:
                             "equalizer-bar 0.9s ease-in-out 0.4s infinite alternate",
                         }}
@@ -4911,19 +5109,12 @@ function FinalSection() {
               <div
                 style={{
                   display: "inline-flex",
-
                   alignItems: "center",
-
                   gap: "10px",
-
                   padding: "8px 24px",
-
                   borderRadius: "9999px",
-
                   background: "rgba(201, 168, 76, 0.15)",
-
                   border: "1px solid rgba(201, 168, 76, 0.4)",
-
                   marginBottom: "20px",
                 }}
               >
@@ -4932,11 +5123,8 @@ function FinalSection() {
                   className="shimmer-text"
                   style={{
                     fontFamily: "var(--font-display)",
-
                     fontSize: "1.25rem",
-
                     fontWeight: 600,
-
                     letterSpacing: "0.06em",
                   }}
                 >
@@ -4948,19 +5136,12 @@ function FinalSection() {
               <h2
                 style={{
                   fontFamily: "var(--font-display)",
-
                   fontSize: "clamp(2rem, 5vw, 3.2rem)",
-
                   fontWeight: 500,
-
                   fontStyle: "italic",
-
                   color: "#fff3cf",
-
                   margin: "0 0 8px",
-
                   lineHeight: 1.15,
-
                   textShadow: "0 0 25px rgba(201, 168, 76, 0.3)",
                 }}
               >
@@ -4969,19 +5150,14 @@ function FinalSection() {
               <p
                 style={{
                   fontFamily: "var(--font-body)",
-
                   fontSize: "0.75rem",
-
                   letterSpacing: "0.25em",
-
                   textTransform: "uppercase",
-
                   color: "var(--primary)",
-
                   marginBottom: "28px",
                 }}
               >
-                KFC · September 23, 2025 to Today & Forever
+                September 23, 2025 to Today & Forever
               </p>
 
               {/* Centerpiece Photo: muthe muthaarame */}
@@ -4989,18 +5165,12 @@ function FinalSection() {
                 <div
                   style={{
                     display: "inline-block",
-
                     position: "relative",
-
                     padding: "12px",
-
                     background:
                       "linear-gradient(145deg, #1d192a 0%, #120e1d 100%)",
-
                     borderRadius: "18px",
-
                     border: "1px solid rgba(201, 168, 76, 0.4)",
-
                     boxShadow:
                       "0 20px 50px rgba(0, 0, 0, 0.7), 0 0 35px rgba(201, 168, 76, 0.2)",
                   }}
@@ -5008,15 +5178,10 @@ function FinalSection() {
                   <div
                     style={{
                       width: "clamp(210px, 30vw, 280px)",
-
                       aspectRatio: "721/1280",
-
                       maxHeight: "420px",
-
                       borderRadius: "12px",
-
                       overflow: "hidden",
-
                       background: "#09080e",
                     }}
                   >
@@ -5025,11 +5190,8 @@ function FinalSection() {
                       alt="Muthe Mutharame"
                       style={{
                         width: "100%",
-
                         height: "100%",
-
                         objectFit: "cover",
-
                         transition: "transform 0.5s ease",
                       }}
                       onMouseEnter={(e) =>
@@ -5043,13 +5205,9 @@ function FinalSection() {
                   <p
                     style={{
                       fontFamily: "var(--font-hand)",
-
                       fontSize: "1.3rem",
-
                       color: "var(--primary)",
-
                       margin: "12px 0 4px",
-
                       textAlign: "center",
                     }}
                   >
@@ -5062,21 +5220,13 @@ function FinalSection() {
               <div
                 style={{
                   fontFamily: "var(--font-display)",
-
                   fontSize: "clamp(1.05rem, 2.2vw, 1.25rem)",
-
                   fontStyle: "italic",
-
                   fontWeight: 300,
-
                   lineHeight: 1.95,
-
                   color: "rgba(240, 234, 214, 0.9)",
-
                   textAlign: "center",
-
                   maxWidth: "600px",
-
                   margin: "0 auto 30px",
                 }}
               >
@@ -5095,25 +5245,19 @@ function FinalSection() {
                 <p
                   style={{
                     margin: "0 0 12px",
-
                     color: "#fff1bd",
-
                     fontWeight: 500,
-
                     fontSize: "clamp(1.15rem, 2.5vw, 1.4rem)",
                   }}
                 >
-                  "Happy Birthday, Muthe Mutharame. May your year ahead shine as
-                  bright as your eyes behind your glasses, and may your days
-                  always be filled with unconditional love, laughter, and
-                  endless joy."
+                  "Happy Birthday, Panda! Cheers to Twenty wonderful years, and
+                  may your days always be filled with boundless joy, peace, and
+                  uncontrollable laughter."
                 </p>
                 <p
                   style={{
                     margin: "0",
-
                     color: "var(--primary)",
-
                     fontSize: "1rem",
                   }}
                 >
@@ -5126,13 +5270,9 @@ function FinalSection() {
               <div
                 style={{
                   display: "flex",
-
                   flexDirection: "column",
-
                   alignItems: "center",
-
                   gap: "10px",
-
                   marginTop: "15px",
                 }}
               >
@@ -5140,49 +5280,34 @@ function FinalSection() {
                   onClick={handleShowerLove}
                   style={{
                     display: "inline-flex",
-
                     alignItems: "center",
-
                     gap: "10px",
-
                     padding: "12px 28px",
-
                     borderRadius: "9999px",
-
                     background:
                       "linear-gradient(135deg, #c9a84c 0%, #e8c76b 100%)",
-
                     color: "#09080e",
-
                     fontWeight: 600,
-
                     fontSize: "0.9rem",
-
                     letterSpacing: "0.05em",
-
                     border: "none",
-
                     cursor: "pointer",
-
                     boxShadow: "0 4px 20px rgba(201, 168, 76, 0.4)",
-
                     transition: "all 0.25s ease",
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = "scale(1.05)"
-
                     e.currentTarget.style.boxShadow =
                       "0 6px 28px rgba(201, 168, 76, 0.6)"
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = "scale(1)"
-
                     e.currentTarget.style.boxShadow =
                       "0 4px 20px rgba(201, 168, 76, 0.4)"
                   }}
                 >
                   <span>💖</span>
-                  <span>Shower Hearts & Blessings for Muthe Mutharame</span>
+                  <span>Shower Hearts & Blessings for Panda</span>
                   <span>✨</span>
                 </button>
 
@@ -5190,11 +5315,8 @@ function FinalSection() {
                   <p
                     style={{
                       fontFamily: "var(--font-hand)",
-
                       fontSize: "1.15rem",
-
                       color: "var(--primary)",
-
                       margin: 0,
                     }}
                   >
@@ -5204,84 +5326,32 @@ function FinalSection() {
               </div>
             </div>
 
-            <div
-              style={{
-                fontFamily: "var(--font-display)",
-
-                fontSize: "clamp(1rem, 2vw, 1.2rem)",
-
-                fontStyle: "italic",
-
-                fontWeight: 300,
-
-                lineHeight: 2,
-
-                color: "rgba(240,234,214,0.7)",
-
-                marginBottom: "40px",
-              }}
-            >
-              "Years from now, when life becomes busy and memories begin to
-              fade...
-              <br />
-              <br />I hope you come back here.
-              <br />
-              <br />
-              And remember us.
-              <br />
-              The places. The fights. The laughter. The chaos. The journey.
-              <br />
-              <br />
-              And how one unexpected person became one of the most unforgettable
-              parts of my story."
+            {/* Toggle back to live countdown clock button */}
+            <div style={{ marginTop: "24px" }}>
+              <button
+                onClick={handleShowCountdown}
+                style={{
+                  background: "none",
+                  border: "1px solid rgba(201, 168, 76, 0.3)",
+                  color: "var(--muted-foreground)",
+                  borderRadius: "9999px",
+                  padding: "8px 20px",
+                  fontSize: "0.8rem",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = "var(--primary)"
+                  e.currentTarget.style.color = "var(--primary)"
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "rgba(201, 168, 76, 0.3)"
+                  e.currentTarget.style.color = "var(--muted-foreground)"
+                }}
+              >
+                ⏳ View Live Countdown Clock
+              </button>
             </div>
-
-            <p
-              style={{
-                fontFamily: "var(--font-hand)",
-
-                fontSize: "clamp(1.4rem, 3.5vw, 2rem)",
-
-                color: "var(--primary)",
-
-                lineHeight: 1.6,
-              }}
-            >
-              "Thank you for unexpectedly becoming my person, Muthe Mutharame.
-              ❤️"
-            </p>
-
-            <div
-              style={{
-                marginTop: "50px",
-
-                height: "1px",
-
-                width: "120px",
-
-                background:
-                  "linear-gradient(to right, transparent, rgba(201,168,76,0.4), transparent)",
-
-                margin: "50px auto 0",
-              }}
-            />
-            <p
-              style={{
-                fontFamily: "var(--font-body)",
-
-                fontSize: "0.7rem",
-
-                letterSpacing: "0.2em",
-
-                textTransform: "uppercase",
-
-                color: "var(--muted-foreground)",
-
-                marginTop: "20px",
-              }}
-            >
-              The Unexpected Chapter — made with love for Muthe Mutharame ✦
-            </p>
           </div>
         )}
       </div>
